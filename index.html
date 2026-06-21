@@ -691,7 +691,7 @@ function startTimer(){
   const step=steps[currentStep];
   if(step.agitationGuide){
     agitState='running'; agitElapsed=0;
-    speak('バンピングしてください。タンクを机にコンコンと叩いてください。');
+    speak('バンピングしてください。');
     setTimeout(()=>speak('連続撹拌を開始してください。'), 3000);
     updateAgitStatus();
   }
@@ -710,7 +710,7 @@ function startTimer(){
         const afterCont=e-CONT; // 30秒後からのカウント
         // afterCont=30→60秒, 60→90秒... つまりafterCont%30===0かつafterCont>=30
         if(afterCont%INT===0){ playAgitStart(); speak('撹拌してください。'); }
-        if(afterCont%INT===10){ playAgitEnd(); speak('撹拌終了。静置してください。'); }
+        if(afterCont%INT===10 && afterCont>=40){ playAgitEnd(); speak('撹拌終了。静置してください。'); }
       }
       updateAgitStatus();
     }
