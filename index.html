@@ -391,10 +391,16 @@ function buildSteps() {
     },
     {
       phase:"漂白", title:"漂白液投入",
-      desc:`漂白液（38℃±3℃）を投入します。<strong>8〜10分間</strong>処理。終わったら回収できます。`,
+      desc:`漂白液（38℃±3℃）を投入します。<strong>8〜10分間</strong>処理。`,
       tags:[{type:"temp",text:"38℃±3℃"},{type:"time",text:"8〜10分"},{type:"info",text:"液回収可"}],
       checklist:[], timer:540, timerLabel:"漂白",
-      agitation:"最初30秒：連続撹拌\n以降1分ごとに10秒撹拌"
+      agitationGuide60: true
+    },
+    {
+      phase:"漂白", title:"漂白液を回収",
+      desc:`漂白液を保存ボトルへ回収します。<strong>再利用可能</strong>です。`,
+      tags:[{type:"info",text:"液を回収保存"},{type:"info",text:"再利用可"}],
+      checklist:["漂白液を保存ボトルへ回収","タンク内の液を完全に出した"], timer:null
     },
     {
       phase:"漂白", title:"水洗（漂白後）",
@@ -404,10 +410,16 @@ function buildSteps() {
     },
     {
       phase:"定着", title:"定着液投入",
-      desc:`定着液（38℃±3℃）を投入します。<strong>5分間</strong>処理。液は回収して再利用可能です。`,
+      desc:`定着液（38℃±3℃）を投入します。<strong>5分間</strong>処理。`,
       tags:[{type:"temp",text:"38℃±3℃"},{type:"time",text:"5分"},{type:"info",text:"液回収可"}],
       checklist:[], timer:300, timerLabel:"定着",
-      agitation:"最初30秒：連続撹拌\n以降1分ごとに10秒撹拌"
+      agitationGuide60: true
+    },
+    {
+      phase:"定着", title:"定着液を回収",
+      desc:`定着液を保存ボトルへ回収します。<strong>再利用可能</strong>です。`,
+      tags:[{type:"info",text:"液を回収保存"},{type:"info",text:"再利用可"}],
+      checklist:["定着液を保存ボトルへ回収","タンク内の液を完全に出した"], timer:null
     },
     {
       phase:"水洗", title:"最終水洗",
@@ -518,7 +530,7 @@ function renderStep() {
   const ah=document.getElementById('agitationHint');
 
   if(step.agitationGuide) {
-    // 現像ステップ：撹拌ガイドモード
+    // 現像ステップ：撹拌ガイドモード（30秒連続+30秒インターバル）
     ta.classList.add('visible');
     as.classList.add('visible');
     ah.classList.remove('visible');
@@ -530,6 +542,19 @@ function renderStep() {
     updateTimerDisplay();
     agitState='idle'; agitElapsed=0;
     updateAgitStatus();
+  } else if(step.agitationGuide60) {
+    // 漂白・定着ステップ：撹拌ガイドモード（30秒連続+60秒インターバル）
+    ta.classList.add('visible');
+    as.classList.add('visible');
+    ah.classList.remove('visible');
+    timerRemaining=step.timer; timerTotal=step.timer; timerRunning=false;
+    document.getElementById('timerStartBtn').textContent='▶ 液を注いだ → スタート';
+    document.getElementById('timerStartBtn').className='btn btn-primary';
+    document.getElementById('timerLabel').textContent=step.timerLabel||'タイマー';
+    document.getElementById('timerProgressFill').style.width='100%';
+    updateTimerDisplay();
+    agitState='idle'; agitElapsed=0;
+    updateAgitStatus60();
   } else if(step.timer) {
     ta.classList.add('visible');
     as.classList.remove('visible');
@@ -559,7 +584,70 @@ function renderStep() {
   else{nb.textContent='次のステップ →';nb.className='btn btn-primary';}
 }
 
-// ---- 撹拌ガイド ----
+// ---- 撹拌ガイド（漂白・定着：60秒インターバル）----
+function updateAgitStatus60() {
+  const phaseEl = document.getElementById('agitPhase');
+  const msgEl = document.getElementById('agitMessage');
+  const cdEl = document.getElementById('agitCountdown');
+  const nextEl = document.getElementById('agitNext');
+  const elapsed = agitElapsed;
+  const CONTINUOUS_END = 30;
+  const INTERVAL = 60;
+
+  if(agitState==='idle') {
+    phaseEl.textContent='AGITATION GUIDE';
+    msgEl.textContent='液を注いだらスタート';
+    msgEl.className='agit-message';
+    cdEl.textContent=''; nextEl.textContent=''; return;
+  }
+  if(elapsed===0) {
+    phaseEl.textContent='0秒 — バンピング';
+    msgEl.textContent='🔨 コンコン叩いて気泡を抜く';
+    msgEl.className='agit-message active';
+    cdEl.textContent=''; nextEl.textContent='→ すぐ連続撹拌を開始'; return;
+  }
+  if(elapsed < CONTINUOUS_END) {
+    const rem = CONTINUOUS_END - elapsed;
+    phaseEl.textContent=`${elapsed}秒経過 — 連続撹拌中`;
+    msgEl.textContent='🔄 連続撹拌してください';
+    msgEl.className='agit-message active';
+    cdEl.textContent=String(rem);
+    nextEl.textContent='→ 30秒で連続撹拌終了'; return;
+  }
+  if(elapsed === CONTINUOUS_END) {
+    phaseEl.textContent='30秒 — 連続撹拌終了';
+    msgEl.textContent='✅ 連続撹拌終了、静置';
+    msgEl.className='agit-message done';
+    cdEl.textContent=''; nextEl.textContent='→ 次の撹拌：90秒'; return;
+  }
+  const afterCont = elapsed - CONTINUOUS_END;
+  const cyclePos = afterCont % INTERVAL;
+  const cycleNum = Math.floor(afterCont / INTERVAL);
+  const nextAgitAt = CONTINUOUS_END + (cycleNum + 1) * INTERVAL;
+
+  if(cyclePos === 0 && afterCont >= INTERVAL) {
+    phaseEl.textContent=`${elapsed}秒 — 撹拌タイミング！`;
+    msgEl.textContent='🔄 撹拌してください（10秒）';
+    msgEl.className='agit-message active';
+    cdEl.textContent='10';
+    nextEl.textContent=`→ 次の撹拌：${nextAgitAt}秒`;
+  } else if(cyclePos <= 10 && afterCont >= INTERVAL) {
+    phaseEl.textContent=`${elapsed}秒経過 — 撹拌中`;
+    msgEl.textContent='🔄 撹拌中…';
+    msgEl.className='agit-message active';
+    cdEl.textContent=String(10-cyclePos);
+    nextEl.textContent=`→ 次の撹拌：${nextAgitAt}秒`;
+  } else {
+    const untilNext = nextAgitAt - elapsed;
+    phaseEl.textContent=`${elapsed}秒経過 — 静置中`;
+    msgEl.textContent='静置';
+    msgEl.className='agit-message';
+    cdEl.textContent='';
+    nextEl.textContent=`→ 次の撹拌まで：${untilNext}秒（${nextAgitAt}秒）`;
+  }
+}
+
+// ---- 撹拌ガイド（現像：30秒インターバル）----
 // タイムライン（現像ステップ）:
 // 0秒: スタート → バンピング促し
 // 0〜30秒: 連続撹拌フェーズ
@@ -695,6 +783,12 @@ function startTimer(){
     setTimeout(()=>speak('連続撹拌を開始してください。'), 3000);
     updateAgitStatus();
   }
+  if(step.agitationGuide60){
+    agitState='running'; agitElapsed=0;
+    speak('バンピングしてください。');
+    setTimeout(()=>speak('連続撹拌を開始してください。'), 3000);
+    updateAgitStatus60();
+  }
 
   timerInterval=setInterval(()=>{
     timerRemaining--;
@@ -705,14 +799,24 @@ function startTimer(){
       const e=agitElapsed;
       const CONT=30, INT=30;
       if(e===CONT){ playContinuousEnd(); speak('連続撹拌終了です。静置してください。'); }
-      // 次の撹拌は60秒から（afterCont=30, 60, 90...）
       if(e>CONT){
-        const afterCont=e-CONT; // 30秒後からのカウント
-        // afterCont=30→60秒, 60→90秒... つまりafterCont%30===0かつafterCont>=30
+        const afterCont=e-CONT;
         if(afterCont%INT===0){ playAgitStart(); speak('撹拌してください。'); }
         if(afterCont%INT===10 && afterCont>=40){ playAgitEnd(); speak('撹拌終了。静置してください。'); }
       }
       updateAgitStatus();
+    }
+
+    if(step.agitationGuide60){
+      const e=agitElapsed;
+      const CONT=30, INT=60;
+      if(e===CONT){ playContinuousEnd(); speak('連続撹拌終了です。静置してください。'); }
+      if(e>CONT){
+        const afterCont=e-CONT;
+        if(afterCont%INT===0){ playAgitStart(); speak('撹拌してください。'); }
+        if(afterCont%INT===10 && afterCont>=70){ playAgitEnd(); speak('撹拌終了。静置してください。'); }
+      }
+      updateAgitStatus60();
     }
 
     // 残り10秒ビープ
