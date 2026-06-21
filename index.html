@@ -622,13 +622,13 @@ function updateAgitStatus() {
   const cycleNum = Math.floor(afterCont / INTERVAL);
   const nextAgitAt = CONTINUOUS_END + (cycleNum + 1) * INTERVAL;
 
-  if(cyclePos === 0) {
+  if(cyclePos === 0 && afterCont >= INTERVAL) {
     phaseEl.textContent=`${elapsed}秒 — 撹拌タイミング！`;
     msgEl.textContent='🔄 撹拌してください（10秒）';
     msgEl.className='agit-message active';
     cdEl.textContent='10';
     nextEl.textContent=`→ 次の撹拌：${nextAgitAt}秒`;
-  } else if(cyclePos <= 10) {
+  } else if(cyclePos <= 10 && afterCont >= INTERVAL) {
     phaseEl.textContent=`${elapsed}秒経過 — 撹拌中`;
     msgEl.textContent='🔄 撹拌中…';
     msgEl.className='agit-message active';
