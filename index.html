@@ -596,7 +596,7 @@ function updateAgitStatus() {
     return;
   }
 
-  if(elapsed <= CONTINUOUS_END) {
+  if(elapsed < CONTINUOUS_END) {
     const rem = CONTINUOUS_END - elapsed;
     phaseEl.textContent=`${elapsed}秒経過 — 連続撹拌中`;
     msgEl.textContent='🔄 連続撹拌してください';
@@ -615,30 +615,26 @@ function updateAgitStatus() {
     return;
   }
 
-  // インターバル撹拌フェーズ
-  // 撹拌タイミング: 60, 90, 120, 150... (CONTINUOUS_END + INTERVAL * n)
+  // インターバル撹拌フェーズ（61秒〜）
+  // 撹拌タイミング: 60, 90, 120... (afterCont = 30, 60, 90...)
   const afterCont = elapsed - CONTINUOUS_END;
   const cyclePos = afterCont % INTERVAL; // 0〜29
-  const cycleNum = Math.floor(afterCont / INTERVAL) + 1;
-  const nextAgitAt = CONTINUOUS_END + cycleNum * INTERVAL;
-  const prevAgitAt = CONTINUOUS_END + (cycleNum-1) * INTERVAL;
+  const cycleNum = Math.floor(afterCont / INTERVAL);
+  const nextAgitAt = CONTINUOUS_END + (cycleNum + 1) * INTERVAL;
 
   if(cyclePos === 0) {
-    // 撹拌タイミング！
     phaseEl.textContent=`${elapsed}秒 — 撹拌タイミング！`;
     msgEl.textContent='🔄 撹拌してください（10秒）';
     msgEl.className='agit-message active';
-    cdEl.textContent='';
+    cdEl.textContent='10';
     nextEl.textContent=`→ 次の撹拌：${nextAgitAt}秒`;
   } else if(cyclePos <= 10) {
-    // 撹拌中
     phaseEl.textContent=`${elapsed}秒経過 — 撹拌中`;
     msgEl.textContent='🔄 撹拌中…';
     msgEl.className='agit-message active';
     cdEl.textContent=String(10-cyclePos);
     nextEl.textContent=`→ 次の撹拌：${nextAgitAt}秒`;
   } else {
-    // 静置中
     const untilNext = nextAgitAt - elapsed;
     phaseEl.textContent=`${elapsed}秒経過 — 静置中`;
     msgEl.textContent='静置';
@@ -695,7 +691,8 @@ function startTimer(){
   const step=steps[currentStep];
   if(step.agitationGuide){
     agitState='running'; agitElapsed=0;
-    speak('バンピングしてください。タンクを机にコンコンと叩いてください。その後、連続撹拌を開始してください。');
+    speak('バンピングしてください。タンクを机にコンコンと叩いてください。');
+    setTimeout(()=>speak('連続撹拌を開始してください。'), 3000);
     updateAgitStatus();
   }
 
@@ -707,13 +704,13 @@ function startTimer(){
     if(step.agitationGuide){
       const e=agitElapsed;
       const CONT=30, INT=30;
-      if(e===1){ speak('連続撹拌してください。'); }
       if(e===CONT){ playContinuousEnd(); speak('連続撹拌終了です。静置してください。'); }
+      // 次の撹拌は60秒から（afterCont=30, 60, 90...）
       if(e>CONT){
-        const afterCont=e-CONT;
-        const cyclePos=afterCont%INT;
-        if(cyclePos===0 && afterCont>0){ playAgitStart(); speak('撹拌してください。'); }
-        if(cyclePos===10){ playAgitEnd(); speak('撹拌終了。静置してください。'); }
+        const afterCont=e-CONT; // 30秒後からのカウント
+        // afterCont=30→60秒, 60→90秒... つまりafterCont%30===0かつafterCont>=30
+        if(afterCont%INT===0){ playAgitStart(); speak('撹拌してください。'); }
+        if(afterCont%INT===10){ playAgitEnd(); speak('撹拌終了。静置してください。'); }
       }
       updateAgitStatus();
     }
