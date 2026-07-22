@@ -3,21 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MARIX C-41 現像ガイド</title>
+<title>フィルム現像ガイド</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&family=DM+Mono:wght@400;500&display=swap');
+
   :root {
     --bg:#0d0d0d; --surface:#1a1a1a; --border:#2e2e2e;
-    --accent:#e8a020; --accent2:#c04020; --text:#e8e0d4;
-    --muted:#888; --success:#4caf82; --danger:#e05050; --info:#5090e0;
+    --accent:#e8a020; --accent2:#c04020;
+    --text:#e8e0d4; --muted:#888;
+    --success:#4caf82; --danger:#e05050;
   }
+  :root.bw {
+    --accent:#a0c8a0; --accent2:#406040;
+  }
+
   *{box-sizing:border-box;margin:0;padding:0;}
   body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:80px;}
-  header{width:100%;padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:baseline;gap:12px;}
+
+  header{width:100%;padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
   header h1{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.15em;color:var(--accent);text-transform:uppercase;}
   header span{font-size:11px;color:var(--muted);}
+  .header-back{font-size:11px;color:var(--muted);cursor:pointer;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:transparent;font-family:'DM Mono',monospace;}
 
-  /* Setup */
+  /* ---- Mode select ---- */
+  .mode-screen{width:100%;padding:40px 24px;display:flex;flex-direction:column;align-items:center;gap:24px;}
+  .mode-title{font-size:22px;font-weight:700;text-align:center;}
+  .mode-subtitle{font-size:13px;color:var(--muted);text-align:center;}
+  .mode-cards{width:100%;display:flex;flex-direction:column;gap:14px;max-width:400px;}
+  .mode-card{padding:24px;border-radius:16px;border:1px solid var(--border);background:var(--surface);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:16px;}
+  .mode-card:active{transform:scale(.98);}
+  .mode-card.color{border-color:rgba(232,160,32,.4);}
+  .mode-card.color:hover{background:rgba(232,160,32,.06);}
+  .mode-card.bw{border-color:rgba(160,200,160,.4);}
+  .mode-card.bw:hover{background:rgba(160,200,160,.06);}
+  .mode-icon{font-size:36px;flex-shrink:0;}
+  .mode-info{}
+  .mode-name{font-size:18px;font-weight:700;margin-bottom:4px;}
+  .mode-name.color{color:#e8a020;}
+  .mode-name.bw{color:#a0c8a0;}
+  .mode-desc{font-size:12px;color:var(--muted);line-height:1.5;}
+
+  /* ---- Setup ---- */
   .setup-screen{width:100%;padding:24px;display:flex;flex-direction:column;gap:20px;}
   .setup-title{font-size:18px;font-weight:700;margin-bottom:4px;}
   .setup-subtitle{font-size:12px;color:var(--muted);}
@@ -31,28 +57,33 @@
   .counter-row{display:flex;align-items:center;gap:12px;margin-top:4px;}
   .counter-btn{width:40px;height:40px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:20px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
   .counter-btn:active{transform:scale(.95);background:var(--border);}
-  .counter-val{font-family:'DM Mono',monospace;font-size:28px;font-weight:500;color:var(--accent);min-width:40px;text-align:center;}
+  .counter-val{font-family:'DM Mono',monospace;font-size:28px;font-weight:500;color:var(--accent);min-width:50px;text-align:center;}
   .counter-label{font-size:12px;color:var(--muted);}
   .saved-badge{font-size:10px;color:var(--success);font-family:'DM Mono',monospace;margin-top:6px;}
-  .dev-time-preview{margin-top:14px;padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-family:'DM Mono',monospace;font-size:13px;color:var(--success);letter-spacing:.05em;text-align:center;line-height:1.6;white-space:pre-line;}
-  .strict-note{margin-top:10px;padding:10px 14px;background:rgba(80,144,224,.08);border:1px solid rgba(80,144,224,.25);border-radius:8px;font-size:11px;color:#88aadd;line-height:1.6;}
+  .dev-time-preview{margin-top:14px;padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-family:'DM Mono',monospace;font-size:13px;color:var(--success);text-align:center;line-height:1.8;white-space:pre-line;}
+  .note-box{margin-top:10px;padding:10px 14px;background:rgba(80,144,224,.06);border:1px solid rgba(80,144,224,.2);border-radius:8px;font-size:11px;color:#88aadd;line-height:1.6;}
+  .strict-note{margin-top:10px;padding:10px 14px;background:rgba(80,144,224,.06);border:1px solid rgba(80,144,224,.2);border-radius:8px;font-size:11px;color:#88aadd;line-height:1.6;}
+  .reset-btn{margin-top:10px;padding:8px 14px;border-radius:8px;border:1px solid var(--danger);background:rgba(224,80,80,.1);color:var(--danger);font-family:'Noto Sans JP',sans-serif;font-size:12px;cursor:pointer;}
+  .custom-input{width:100%;margin-top:10px;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:13px;display:none;}
+  .custom-input.visible{display:block;}
   .setup-start-btn{width:100%;padding:18px;background:var(--accent);color:#000;border:none;border-radius:12px;font-family:'Noto Sans JP',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all .2s;}
   .setup-start-btn:active{transform:scale(.98);}
+  .setup-start-btn:disabled{opacity:.4;cursor:not-allowed;}
 
-  /* Progress */
+  /* ---- Progress ---- */
   .progress-wrap{width:100%;padding:0 24px;margin-top:20px;}
   .progress-bar-bg{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
   .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:2px;transition:width .5s ease;}
   .progress-label{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:6px;font-family:'DM Mono',monospace;}
 
-  /* Phase strip */
+  /* ---- Phase strip ---- */
   .phase-strip{width:100%;padding:16px 24px 0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;}
   .phase-strip::-webkit-scrollbar{display:none;}
   .phase-dot{flex-shrink:0;padding:4px 10px;border-radius:20px;font-size:10px;font-family:'DM Mono',monospace;border:1px solid var(--border);color:var(--muted);transition:all .3s;white-space:nowrap;}
   .phase-dot.active{background:var(--accent);border-color:var(--accent);color:#000;font-weight:500;}
   .phase-dot.done{background:var(--border);color:var(--text);}
 
-  /* Card */
+  /* ---- Card ---- */
   .card{width:calc(100% - 48px);margin:20px 24px 0;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;}
   .step-number{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.1em;margin-bottom:8px;}
   .step-title{font-size:22px;font-weight:700;line-height:1.3;margin-bottom:12px;}
@@ -60,13 +91,13 @@
   .step-desc strong{color:var(--accent);font-weight:700;}
   .tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;}
   .tag{padding:4px 10px;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;}
-  .tag.temp{background:rgba(232,160,32,.15);color:var(--accent);border:1px solid rgba(232,160,32,.3);}
+  .tag.temp{background:rgba(232,160,32,.15);color:#e8a020;border:1px solid rgba(232,160,32,.3);}
   .tag.time{background:rgba(76,175,130,.15);color:var(--success);border:1px solid rgba(76,175,130,.3);}
   .tag.warn{background:rgba(224,80,80,.15);color:var(--danger);border:1px solid rgba(224,80,80,.3);}
   .tag.info{background:rgba(232,224,212,.1);color:var(--text);border:1px solid var(--border);}
   .tag.push{background:rgba(224,80,80,.15);color:var(--danger);border:1px solid rgba(224,80,80,.3);}
 
-  /* Checklist */
+  /* ---- Checklist ---- */
   .checklist{margin-top:16px;display:flex;flex-direction:column;gap:8px;}
   .check-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .2s;font-size:13px;user-select:none;}
   .check-item:active{transform:scale(.98);}
@@ -74,11 +105,11 @@
   .check-box{width:20px;height:20px;border:2px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;}
   .check-item.checked .check-box{background:var(--success);border-color:var(--success);color:#000;}
 
-  /* Agitation hint (static) */
-  .agitation-hint{width:calc(100% - 48px);margin:10px 24px 0;padding:12px 16px;background:rgba(232,160,32,.08);border:1px solid rgba(232,160,32,.2);border-radius:8px;font-size:12px;color:var(--accent);display:none;font-family:'DM Mono',monospace;line-height:1.6;}
+  /* ---- Agitation hint ---- */
+  .agitation-hint{width:calc(100% - 48px);margin:10px 24px 0;padding:12px 16px;background:rgba(160,160,160,.06);border:1px solid rgba(160,160,160,.2);border-radius:8px;font-size:12px;color:var(--accent);display:none;font-family:'DM Mono',monospace;line-height:1.6;}
   .agitation-hint.visible{display:block;}
 
-  /* Timer */
+  /* ---- Timer ---- */
   .timer-area{width:calc(100% - 48px);margin:12px 24px 0;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px;display:none;}
   .timer-area.visible{display:block;}
   .timer-display{font-family:'DM Mono',monospace;font-size:52px;font-weight:500;text-align:center;color:var(--accent);letter-spacing:.05em;}
@@ -89,8 +120,10 @@
   .timer-progress{height:3px;background:var(--border);border-radius:2px;margin-top:12px;overflow:hidden;}
   .timer-progress-fill{height:100%;background:linear-gradient(90deg,var(--success),var(--accent));border-radius:2px;transition:width 1s linear;}
   .timer-btns{display:flex;gap:8px;margin-top:14px;}
+  .speech-toggle-wrap{margin-top:10px;text-align:right;}
+  .speech-toggle-wrap button{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;}
 
-  /* Agitation status box */
+  /* ---- Agitation status ---- */
   .agit-status{width:calc(100% - 48px);margin:10px 24px 0;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;display:none;}
   .agit-status.visible{display:block;}
   .agit-phase{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:.1em;margin-bottom:6px;}
@@ -100,7 +133,19 @@
   .agit-countdown{font-family:'DM Mono',monospace;font-size:36px;font-weight:500;text-align:center;color:var(--text);margin-bottom:10px;}
   .agit-next{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
 
-  /* Buttons */
+  /* ---- Clearing time input ---- */
+  .clearing-area{width:calc(100% - 48px);margin:12px 24px 0;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px;display:none;}
+  .clearing-area.visible{display:block;}
+  .clearing-label{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:.1em;margin-bottom:10px;}
+  .clearing-desc{font-size:13px;color:#bbb;margin-bottom:14px;line-height:1.6;}
+  .clearing-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .clearing-val{font-family:'DM Mono',monospace;font-size:28px;color:var(--accent);min-width:80px;text-align:center;}
+  .clearing-sec-row{display:flex;gap:8px;margin-bottom:12px;}
+  .clearing-sec-btn{padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;cursor:pointer;}
+  .clearing-preview{padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-family:'DM Mono',monospace;font-size:13px;color:var(--success);text-align:center;}
+  .clearing-default-btn{margin-top:10px;}
+
+  /* ---- Buttons ---- */
   .btn{flex:1;padding:14px;border:none;border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;}
   .btn:active{transform:scale(.97);}
   .btn-primary{background:var(--accent);color:#000;}
@@ -109,9 +154,9 @@
   .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);}
   .action-area{width:calc(100% - 48px);margin:16px 24px 0;display:flex;gap:10px;}
 
-  /* Complete */
+  /* ---- Complete ---- */
   .complete-screen{display:none;flex-direction:column;align-items:center;padding:48px 24px;text-align:center;}
-  .complete-screen.visible{display:flex;}
+  .complete-screen.visible{display:flex!important;}
   .complete-icon{font-size:56px;margin-bottom:16px;}
   .complete-title{font-size:26px;font-weight:700;margin-bottom:16px;}
   .complete-stats{width:100%;max-width:320px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;text-align:left;}
@@ -119,64 +164,138 @@
   .stat-row:last-child{border-bottom:none;}
   .stat-label{color:var(--muted);}
   .stat-val{font-family:'DM Mono',monospace;color:var(--accent);font-size:13px;}
-  .next-session-box{width:100%;max-width:320px;margin-top:14px;padding:14px 18px;background:rgba(80,144,224,.08);border:1px solid rgba(80,144,224,.25);border-radius:12px;font-size:12px;color:#88aadd;line-height:1.7;text-align:left;}
+  .next-session-box{width:100%;max-width:320px;margin-top:14px;padding:14px 18px;background:rgba(80,144,224,.06);border:1px solid rgba(80,144,224,.2);border-radius:12px;font-size:12px;color:#88aadd;line-height:1.7;text-align:left;}
   .next-session-box strong{color:#aac8ff;}
+
   .hidden{display:none!important;}
 </style>
 </head>
 <body>
 <header>
-  <h1>MARIX C-41</h1>
-  <span>カラーネガ現像ガイド</span>
+  <h1 id="headerTitle">FILM DEV</h1>
+  <span id="headerSub">現像ガイド</span>
+  <button class="header-back hidden" id="headerBack" onclick="goHome()">← トップ</button>
 </header>
 
-<!-- Setup -->
-<div class="setup-screen" id="setupScreen">
-  <div>
-    <div class="setup-title">現像の設定</div>
-    <div class="setup-subtitle">液の使用回数・今回の本数・増感を設定してください</div>
+<!-- ===== MODE SELECT ===== -->
+<div class="mode-screen" id="modeScreen">
+  <div class="mode-title">現像ガイド</div>
+  <div class="mode-subtitle">今回現像するフィルムの種類を選んでください</div>
+  <div class="mode-cards">
+    <div class="mode-card color" onclick="selectMode('color')">
+      <div class="mode-icon">🎨</div>
+      <div class="mode-info">
+        <div class="mode-name color">カラーネガ</div>
+        <div class="mode-desc">MARIX C-41現像キット<br>38℃・増感対応・撹拌ガイド付き</div>
+      </div>
+    </div>
+    <div class="mode-card bw" onclick="selectMode('bw')">
+      <div class="mode-icon">⬛</div>
+      <div class="mode-info">
+        <div class="mode-name bw">白黒</div>
+        <div class="mode-desc">MARIX MX-76（D-76）<br>20℃基準・クリアリングタイム対応</div>
+      </div>
+    </div>
   </div>
+</div>
+
+<!-- ===== COLOR SETUP ===== -->
+<div class="setup-screen hidden" id="colorSetup">
+  <div><div class="setup-title">カラー現像の設定</div><div class="setup-subtitle">液の使用回数・本数・増感を設定してください</div></div>
 
   <div class="setup-section">
     <div class="setup-label">液の使用回数（これまで）</div>
     <div class="counter-row">
-      <button class="counter-btn" onclick="changeTotal(-1)">−</button>
-      <div class="counter-val" id="totalRollVal">0</div>
+      <button class="counter-btn" onclick="c41.changeTotal(-1)">−</button>
+      <div class="counter-val" id="c41TotalVal">0</div>
       <div class="counter-label">回使用済み</div>
-      <button class="counter-btn" onclick="changeTotal(1)">＋</button>
+      <button class="counter-btn" onclick="c41.changeTotal(1)">＋</button>
     </div>
-    <div class="saved-badge" id="savedBadge"></div>
-    <button onclick="resetLiquid()" style="margin-top:10px;padding:8px 14px;border-radius:8px;border:1px solid var(--danger);background:rgba(224,80,80,.1);color:var(--danger);font-family:'Noto Sans JP',sans-serif;font-size:12px;cursor:pointer;">🔄 現像液を新しくした</button>
-    <div class="strict-note" style="margin-top:10px;">
-      💡 現像ごとに時間3%延長（タンクに何本入れても1回扱い）<br>
-      1回目 3:30 → 2回目 3:37 → 3回目 3:44…
-    </div>
+    <div class="saved-badge" id="c41SavedBadge"></div>
+    <button class="reset-btn" onclick="c41.resetLiquid()">🔄 現像液を新しくした</button>
+    <div class="strict-note">💡 現像ごとに時間3%延長（タンクに何本入れても1回扱い）<br>1回目 3:30 → 2回目 3:37 → 3回目 3:44…</div>
   </div>
 
   <div class="setup-section">
     <div class="setup-label">今回タンクに入れる本数</div>
-    <div class="btn-group" id="tankGroup">
-      <button class="sel-btn selected" onclick="selectTank(this,1)">1本</button>
-      <button class="sel-btn" onclick="selectTank(this,2)">2本</button>
+    <div class="btn-group" id="c41TankGroup">
+      <button class="sel-btn selected" onclick="c41.selectTank(this,1)">1本</button>
+      <button class="sel-btn" onclick="c41.selectTank(this,2)">2本</button>
     </div>
   </div>
 
   <div class="setup-section">
     <div class="setup-label">増感 / 減感</div>
-    <div class="btn-group" id="pushGroup">
-      <button class="sel-btn selected" onclick="selectPush(this,0)">±0（標準）</button>
-      <button class="sel-btn" onclick="selectPush(this,1)">+1段増感</button>
-      <button class="sel-btn" onclick="selectPush(this,2)">+2段増感</button>
-      <button class="sel-btn" onclick="selectPush(this,3)">+3段増感</button>
-      <button class="sel-btn" onclick="selectPush(this,-1)">−1段減感</button>
+    <div class="btn-group" id="c41PushGroup">
+      <button class="sel-btn selected" onclick="c41.selectPush(this,0)">±0（標準）</button>
+      <button class="sel-btn" onclick="c41.selectPush(this,1)">+1段増感</button>
+      <button class="sel-btn" onclick="c41.selectPush(this,2)">+2段増感</button>
+      <button class="sel-btn" onclick="c41.selectPush(this,3)">+3段増感</button>
+      <button class="sel-btn" onclick="c41.selectPush(this,-1)">−1段減感</button>
     </div>
-    <div class="dev-time-preview" id="devTimePreview">-</div>
+    <div class="dev-time-preview" id="c41Preview">-</div>
   </div>
 
-  <button class="setup-start-btn" onclick="startGuide()">現像を開始する →</button>
+  <button class="setup-start-btn" onclick="c41.startGuide()">現像を開始する →</button>
 </div>
 
-<!-- Guide -->
+<!-- ===== BW SETUP ===== -->
+<div class="setup-screen hidden" id="bwSetup">
+  <div><div class="setup-title">白黒現像の設定</div><div class="setup-subtitle">フィルム・温度・水洗方法を設定してください</div></div>
+
+  <div class="setup-section">
+    <div class="setup-label">フィルム</div>
+    <div class="btn-group" id="bwFilmGroup">
+      <button class="sel-btn selected" onclick="bw.selectFilm(this,'MARIX100')">MARIX 100</button>
+      <button class="sel-btn" onclick="bw.selectFilm(this,'MARIX200')">MARIX 200</button>
+      <button class="sel-btn" onclick="bw.selectFilm(this,'MARIX400')">MARIX 400</button>
+      <button class="sel-btn" onclick="bw.selectFilm(this,'DELTA100')">DELTA 100</button>
+      <button class="sel-btn" onclick="bw.selectFilm(this,'OTHER')">その他</button>
+    </div>
+    <input class="custom-input" id="bwCustomFilm" type="text" placeholder="フィルム名を入力" oninput="bw.updatePreview()">
+  </div>
+
+  <div class="setup-section">
+    <div class="setup-label">現像温度</div>
+    <div class="counter-row">
+      <button class="counter-btn" onclick="bw.changeTemp(-1)">−</button>
+      <div class="counter-val" id="bwTempVal">20</div>
+      <div class="counter-label">℃</div>
+      <button class="counter-btn" onclick="bw.changeTemp(1)">＋</button>
+    </div>
+    <div class="note-box" id="bwTempNote">20℃が標準です。公式データは20℃基準。</div>
+  </div>
+
+  <div class="setup-section">
+    <div class="setup-label">現像時間</div>
+    <div class="dev-time-preview" id="bwPreview">-</div>
+    <div class="note-box" id="bwFilmNote"></div>
+  </div>
+
+  <div class="setup-section">
+    <div class="setup-label">水洗方法</div>
+    <div class="btn-group" id="bwQwGroup">
+      <button class="sel-btn selected" onclick="bw.selectQW(this,false)">流水のみ（20〜30分）</button>
+      <button class="sel-btn" onclick="bw.selectQW(this,true)">富士QW使用（5分）</button>
+    </div>
+  </div>
+
+  <div class="setup-section">
+    <div class="setup-label">定着液の使用本数</div>
+    <div class="counter-row">
+      <button class="counter-btn" onclick="bw.changeFixCount(-1)">−</button>
+      <div class="counter-val" id="bwFixCountVal">0</div>
+      <div class="counter-label">本使用済み</div>
+      <button class="counter-btn" onclick="bw.changeFixCount(1)">＋</button>
+    </div>
+    <div class="saved-badge" id="bwFixBadge"></div>
+    <button class="reset-btn" onclick="bw.resetFixCount()">🔄 定着液を新しくした</button>
+  </div>
+
+  <button class="setup-start-btn" id="bwStartBtn" onclick="bw.startGuide()">現像を開始する →</button>
+</div>
+
+<!-- ===== GUIDE SCREEN ===== -->
 <div id="guideScreen" class="hidden" style="width:100%">
   <div class="progress-wrap">
     <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
@@ -192,7 +311,24 @@
   </div>
   <div class="agitation-hint" id="agitationHint"></div>
 
-  <!-- 通常タイマー -->
+  <div class="clearing-area" id="clearingArea">
+    <div class="clearing-label">CLEARING TIME INPUT</div>
+    <div class="clearing-desc">切れ端が透明になるまでの時間を入力してください。定着時間は自動で2倍に設定されます。</div>
+    <div class="clearing-row">
+      <button class="counter-btn" onclick="bw.changeClearingMin(-1)">−</button>
+      <div class="clearing-val" id="clearingDisplay">--:--</div>
+      <button class="counter-btn" onclick="bw.changeClearingMin(1)">＋</button>
+    </div>
+    <div class="clearing-sec-row">
+      <button class="clearing-sec-btn" onclick="bw.changeClearingSec(-30)">−30秒</button>
+      <button class="clearing-sec-btn" onclick="bw.changeClearingSec(30)">＋30秒</button>
+    </div>
+    <div class="clearing-preview" id="clearingPreview">定着時間：7分30秒（デフォルト）</div>
+    <div class="clearing-default-btn">
+      <button class="sel-btn selected" id="defaultFixBtn" onclick="bw.useDefaultFix(this)">デフォルト（7分30秒）</button>
+    </div>
+  </div>
+
   <div class="timer-area" id="timerArea">
     <div class="timer-display" id="timerDisplay">0:00</div>
     <div class="timer-label" id="timerLabel">タイマー</div>
@@ -201,12 +337,11 @@
       <button class="btn btn-primary" id="timerStartBtn" onclick="startTimer()">▶ スタート</button>
       <button class="btn btn-outline" onclick="resetTimer()">リセット</button>
     </div>
-    <div style="margin-top:10px;text-align:right;">
-      <button id="speechToggle" onclick="toggleSpeech()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;">🔊 音声ON</button>
+    <div class="speech-toggle-wrap">
+      <button id="speechToggle" onclick="toggleSpeech()">🔊 音声ON</button>
     </div>
   </div>
 
-  <!-- 撹拌ガイド（現像ステップ専用） -->
   <div class="agit-status" id="agitStatus">
     <div class="agit-phase" id="agitPhase">-</div>
     <div class="agit-message" id="agitMessage">-</div>
@@ -220,294 +355,434 @@
   </div>
 </div>
 
-<!-- Complete -->
+<!-- ===== COMPLETE ===== -->
 <div class="complete-screen" id="completeScreen">
-  <div class="complete-icon">🎞️</div>
+  <div class="complete-icon" id="completeIcon">🎞️</div>
   <div class="complete-title">現像完了！</div>
   <div class="complete-stats" id="completeStats"></div>
-  <div class="next-session-box" id="nextSessionBox"></div>
+  <div class="next-session-box hidden" id="nextSessionBox"></div>
   <div style="margin-top:20px;width:100%;max-width:320px;display:flex;flex-direction:column;gap:10px">
-    <button class="btn btn-primary" onclick="continueSession()" style="width:100%;padding:16px;">続けてもう一本現像する</button>
-    <button class="btn btn-outline" onclick="backToSetup()" style="width:100%;padding:14px;font-size:13px;">最初からやり直す</button>
+    <button class="btn btn-primary" id="continueBtn" style="width:100%;padding:16px;">続けてもう一本</button>
+    <button class="btn btn-outline" onclick="goHome()" style="width:100%;padding:14px;font-size:13px;">トップへ戻る</button>
   </div>
 </div>
 
 <script>
-// ---- localStorage ----
-const LS_KEY = 'marix_c41_uses';
-function loadUses() {
-  try { return parseInt(localStorage.getItem(LS_KEY)||'0',10)||0; } catch(e){return 0;}
-}
-function saveUses(n) {
-  try { localStorage.setItem(LS_KEY, String(n)); } catch(e){}
-}
-
-// ---- State ----
-let totalUses = loadUses(); // 現像液の使用回数（今回の前まで）
-let tankCount = 1;
-let pushStops = 0;
-
-const PUSH_MULT = {'-1':0.8,'0':1.0,'1':1.3,'2':1.75,'3':2.5};
-const BASE_SEC = 210;
-
-function calcDevSec() {
-  const useNum = totalUses + 1;
-  const strict = Math.round(BASE_SEC * Math.pow(1.03, useNum - 1));
-  return Math.round(strict * (PUSH_MULT[String(pushStops)]||1.0));
-}
-
+// ========== 共通ユーティリティ ==========
 function fmtSec(sec){ const m=Math.floor(sec/60),s=sec%60; return `${m}:${String(s).padStart(2,'0')}`; }
-function fmtSecLong(sec){ const m=Math.floor(sec/60),s=sec%60; return s>0?`${m}分${s}秒（${sec}秒）`:`${m}分（${sec}秒）`; }
+function fmtSecLong(sec){ const m=Math.floor(sec/60),s=sec%60; return s>0?`${m}分${s}秒`:`${m}分`; }
 
-function initUI() {
-  document.getElementById('totalRollVal').textContent = totalUses;
-  const badge = document.getElementById('savedBadge');
-  badge.textContent = totalUses > 0 ? `💾 前回の記録：${totalUses}回使用済み` : '';
-  updatePreview();
+let speechEnabled = true;
+let audioCtx = null;
+
+function getAudioCtx(){ if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
+function playBeep(freq,dur,vol,delay){
+  try{
+    const ctx=getAudioCtx(), osc=ctx.createOscillator(), gain=ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value=freq; osc.type='sine';
+    const t=ctx.currentTime+(delay||0);
+    gain.gain.setValueAtTime(vol||0.4,t);
+    gain.gain.exponentialRampToValueAtTime(0.001,t+dur);
+    osc.start(t); osc.stop(t+dur);
+  }catch(e){}
 }
+function playFinishSound(){ [0,0.3,0.6].forEach(o=>playBeep(880,0.25,0.6,o)); }
+function playAgitStart(){ playBeep(660,0.15,0.5); setTimeout(()=>playBeep(660,0.15,0.5),200); }
+function playAgitEnd(){ playBeep(440,0.2,0.4); }
+function playContinuousEnd(){ playBeep(550,0.3,0.5); setTimeout(()=>playBeep(550,0.3,0.5),350); }
 
-function changeTotal(delta) {
-  totalUses = Math.max(0, totalUses + delta);
-  document.getElementById('totalRollVal').textContent = totalUses;
-  document.getElementById('savedBadge').textContent = '';
-  updatePreview();
+function speak(text){
+  if(!speechEnabled) return;
+  try{ const u=new SpeechSynthesisUtterance(text); u.lang='ja-JP'; u.rate=1.1; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); }catch(e){}
 }
+function toggleSpeech(){ speechEnabled=!speechEnabled; document.getElementById('speechToggle').textContent=speechEnabled?'🔊 音声ON':'🔇 音声OFF'; }
 
-function selectTank(btn, val) {
-  tankCount = val;
-  document.querySelectorAll('#tankGroup .sel-btn').forEach(b=>b.classList.remove('selected'));
-  btn.classList.add('selected');
-  updatePreview();
-}
+// ========== モード管理 ==========
+let currentMode = null; // 'color' | 'bw'
 
-function selectPush(btn, val) {
-  pushStops = val;
-  document.querySelectorAll('#pushGroup .sel-btn').forEach(b=>b.classList.remove('selected','push-selected'));
-  if(val>0) btn.classList.add('push-selected'); else btn.classList.add('selected');
-  updatePreview();
-}
-
-function toggleSpeech() {
-  speechEnabled = !speechEnabled;
-  document.getElementById('speechToggle').textContent = speechEnabled ? '🔊 音声ON' : '🔇 音声OFF';
-}
-
-function resetLiquid() {
-  if(confirm('現像液をリセットして使用回数を0に戻しますか？')) {
-    totalUses = 0;
-    saveUses(0);
-    document.getElementById('totalRollVal').textContent = 0;
-    document.getElementById('savedBadge').textContent = '✅ リセットしました';
-    updatePreview();
+function selectMode(mode) {
+  currentMode = mode;
+  document.getElementById('modeScreen').classList.add('hidden');
+  document.getElementById('headerBack').classList.remove('hidden');
+  if(mode==='color') {
+    document.documentElement.classList.remove('bw');
+    document.getElementById('headerTitle').textContent = 'C-41';
+    document.getElementById('headerSub').textContent = 'カラーネガ現像';
+    document.getElementById('colorSetup').classList.remove('hidden');
+    c41.initUI();
+  } else {
+    document.documentElement.classList.add('bw');
+    document.getElementById('headerTitle').textContent = 'MX-76 B&W';
+    document.getElementById('headerSub').textContent = '白黒現像';
+    document.getElementById('bwSetup').classList.remove('hidden');
+    bw.initUI();
   }
 }
 
-// ---- 音声アナウンス ----
-let speechEnabled = true;
-function speak(text) {
-  if(!speechEnabled) return;
-  try {
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'ja-JP';
-    u.rate = 1.1;
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(u);
-  } catch(e) {}
+function goHome() {
+  clearTimers();
+  document.documentElement.classList.remove('bw');
+  document.getElementById('headerTitle').textContent = 'FILM DEV';
+  document.getElementById('headerSub').textContent = '現像ガイド';
+  document.getElementById('headerBack').classList.add('hidden');
+  ['colorSetup','bwSetup','guideScreen'].forEach(id=>{
+    document.getElementById(id).classList.add('hidden');
+  });
+  document.getElementById('completeScreen').classList.remove('visible');
+  document.getElementById('modeScreen').classList.remove('hidden');
+  currentMode=null; steps=[]; currentStep=0;
 }
 
-function updatePreview() {
-  const useNum = totalUses + 1;
-  const devSec = calcDevSec();
-  const pushLabel = pushStops===0?'':`  ${pushStops>0?'+':''}${pushStops}段${pushStops>0?'増感':'減感'}`;
-  const tankLabel = tankCount===2?'  タンク2本':'';
-  document.getElementById('devTimePreview').textContent =
-    `${useNum}回目として計算\n現像時間：${fmtSecLong(devSec)}${pushLabel}${tankLabel}`;
-}
+// ========== C-41 モジュール ==========
+const c41 = (() => {
+  const LS_KEY = 'marix_c41_uses';
+  const BASE_SEC = 210;
+  const PUSH_MULT = {'-1':0.8,'0':1.0,'1':1.3,'2':1.75,'3':2.5};
 
-// ---- Steps ----
-function buildSteps() {
-  const devSec = calcDevSec();
-  const useNum = totalUses + 1;
-  const pushLabel = pushStops===0?'標準':pushStops>0?`+${pushStops}段増感`:`${pushStops}段減感`;
-  const tankLabel = tankCount===2?'（タンク2本処理）':'';
+  let totalUses = 0;
+  let tankCount = 1;
+  let pushStops = 0;
 
-  return [
-    {
-      phase:"準備", title:"薬液の温度確認",
-      desc:`スービドーで現像液を<strong>38℃</strong>に安定させます。漂白液・定着液も一緒に温めておきましょう。`,
-      tags:[{type:"temp",text:"38℃"},{type:"warn",text:"±0.5℃以内"}],
-      checklist:["現像液 38℃ ✓","漂白液 温め中","定着液 温め中"],
-      timer:null
-    },
-    {
-      phase:"準備", title:"ダークバッグの準備",
-      desc:`ダークバッグに必要なものを全部入れてからチャックを閉めます。入れ忘れると途中で開けられません。`,
-      tags:[{type:"warn",text:"入れ忘れ注意"}],
-      checklist:["フィルム","現像タンク（本体）","リール","タンクのフタ","ハサミ"],
-      timer:null
-    },
-    {
-      phase:"準備", title:"フィルムをタンクへ",
-      desc:`ダークバッグの中でフィルムをリールに巻き、<strong>MARIXタンク</strong>に入れてキャップを閉めます。${tankCount===2?'<br><br>今回は<strong>2本同時処理</strong>です。':''}`,
-      tags:[{type:"warn",text:"完全遮光必須"},{type:"info",text:"ダークバッグ使用"},...(tankCount===2?[{type:"info",text:"2本同時"}]:[])],
-      checklist:tankCount===2
-        ?["フィルム1本目リールに巻いた","フィルム2本目リールに巻いた","タンクに入れてキャップ締めた"]
-        :["フィルムをリールに巻いた","タンクに入れた","キャップしっかり締めた"],
-      timer:null
-    },
-    {
-      phase:"準備", title:"前浴（プレウォッシュ）",
-      desc:`38℃のお湯でタンクを温め、現像ムラを防ぎます。<strong>1分間</strong>処理後お湯を捨てます。なしでもOKです。`,
-      tags:[{type:"temp",text:"38℃の水"},{type:"time",text:"1分"},{type:"info",text:"なしでもOK"}],
-      checklist:[], timer:60, timerLabel:"前浴",
-      agitation:"最初30秒：連続撹拌 → その後は静置"
-    },
-    {
-      phase:"現像", title:"現像液投入",
-      desc:`現像液（38℃）を注いだ瞬間タイマーが自動でスタートします。バンピングしてから撹拌を開始してください。<br><br>設定：<strong>${useNum}回目・${pushLabel}${tankLabel}</strong><br>現像時間：<strong>${fmtSecLong(devSec)}</strong>`,
-      tags:[{type:"temp",text:"38℃"},{type:"time",text:fmtSec(devSec)},...(pushStops!==0?[{type:"push",text:pushStops>0?`+${pushStops}段増感`:`${pushStops}段減感`}]:[]),{type:"info",text:`${useNum}回目`}],
-      checklist:[], timer:devSec, timerLabel:"発色現像",
-      agitationGuide: true  // 撹拌ガイドを使う
-    },
-    {
-      phase:"現像", title:"現像液を回収",
-      desc:`現像液を保存ボトルへ回収します。<strong>再利用可能</strong>です。`,
-      tags:[{type:"info",text:"液を回収保存"},{type:"info",text:"再利用可"}],
-      checklist:["現像液を保存ボトルへ回収","タンク内の液を完全に出した"],
-      timer:null
-    },
-    {
-      phase:"停止", title:"停止液",
-      desc:`クエン酸水（クエン酸15g / 水1L）を投入。<strong>30秒間</strong>連続撹拌して現像を止めます。`,
-      tags:[{type:"time",text:"30秒"},{type:"temp",text:"30〜38度"}],
-      checklist:[], timer:30, timerLabel:"停止",
-      agitation:"全時間：連続撹拌"
-    },
-    {
-      phase:"停止", title:"水洗（停止後）",
-      desc:`流水でタンク内を<strong>2〜3回</strong>すすいで停止液を洗い流します。`,
-      tags:[{type:"info",text:"2〜3回すすぎ"}],
-      checklist:["2〜3回すすいだ"], timer:null
-    },
-    {
-      phase:"漂白", title:"漂白液投入",
-      desc:`漂白液（38℃±3℃）を投入します。<strong>8〜10分間</strong>処理。`,
-      tags:[{type:"temp",text:"38℃±3℃"},{type:"time",text:"8〜10分"},{type:"info",text:"液回収可"}],
-      checklist:[], timer:540, timerLabel:"漂白",
-      agitationGuide60: true
-    },
-    {
-      phase:"漂白", title:"漂白液を回収",
-      desc:`漂白液を保存ボトルへ回収します。<strong>再利用可能</strong>です。`,
-      tags:[{type:"info",text:"液を回収保存"},{type:"info",text:"再利用可"}],
-      checklist:["漂白液を保存ボトルへ回収","タンク内の液を完全に出した"], timer:null
-    },
-    {
-      phase:"漂白", title:"水洗（漂白後）",
-      desc:`流水で<strong>2〜3回</strong>すすぎます。漂白の黄色が消えるまでしっかり洗います。`,
-      tags:[{type:"info",text:"黄色が消えるまで"}],
-      checklist:["2〜3回すすいだ","黄色みが消えた"], timer:null
-    },
-    {
-      phase:"定着", title:"定着液投入",
-      desc:`定着液（38℃±3℃）を投入します。<strong>5分間</strong>処理。`,
-      tags:[{type:"temp",text:"38℃±3℃"},{type:"time",text:"5分"},{type:"info",text:"液回収可"}],
-      checklist:[], timer:300, timerLabel:"定着",
-      agitationGuide60: true
-    },
-    {
-      phase:"定着", title:"定着液を回収",
-      desc:`定着液を保存ボトルへ回収します。<strong>再利用可能</strong>です。`,
-      tags:[{type:"info",text:"液を回収保存"},{type:"info",text:"再利用可"}],
-      checklist:["定着液を保存ボトルへ回収","タンク内の液を完全に出した"], timer:null
-    },
-    {
-      phase:"水洗", title:"最終水洗",
-      desc:`流水で<strong>5分間</strong>しっかり水洗いします。`,
-      tags:[{type:"time",text:"5分"},{type:"info",text:"流水"}],
-      checklist:[], timer:300, timerLabel:"最終水洗"
-    },
-    {
-      phase:"水洗", title:"水切り",
-      desc:`水切り剤（ドライウェル等）を数滴入れ、<strong>30秒</strong>軽く撹拌。フィルムを取り出してクリップで吊るします。`,
-      tags:[{type:"time",text:"30秒"},{type:"info",text:"ドライウェル等"}],
-      checklist:[], timer:30, timerLabel:"水切り"
-    },
-    {
-      phase:"乾燥", title:"乾燥",
-      desc:`フィルムをクリップで吊るして乾燥させます。<strong>浴室に吊るすのが一番</strong>。1〜2時間が目安です。`,
-      tags:[{type:"time",text:"1〜2時間"},{type:"info",text:"浴室推奨"}],
-      checklist:["フィルムをクリップで吊るした","浴室または埃のない場所に設置"],
-      timer:null
+  function loadUses(){ try{ return parseInt(localStorage.getItem(LS_KEY)||'0',10)||0; }catch(e){return 0;} }
+  function saveUses(n){ try{ localStorage.setItem(LS_KEY,String(n)); }catch(e){} }
+
+  function calcDevSec(){
+    const useNum = totalUses+1;
+    const strict = Math.round(BASE_SEC * Math.pow(1.03, useNum-1));
+    return Math.round(strict * (PUSH_MULT[String(pushStops)]||1.0));
+  }
+
+  function initUI(){
+    totalUses = loadUses();
+    document.getElementById('c41TotalVal').textContent = totalUses;
+    document.getElementById('c41SavedBadge').textContent = totalUses>0 ? `💾 前回の記録：${totalUses}回使用済み` : '';
+    updatePreview();
+  }
+
+  function changeTotal(delta){
+    totalUses = Math.max(0, totalUses+delta);
+    document.getElementById('c41TotalVal').textContent = totalUses;
+    document.getElementById('c41SavedBadge').textContent = '';
+    updatePreview();
+  }
+
+  function selectTank(btn, val){
+    tankCount = val;
+    document.querySelectorAll('#c41TankGroup .sel-btn').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+    updatePreview();
+  }
+
+  function selectPush(btn, val){
+    pushStops = val;
+    document.querySelectorAll('#c41PushGroup .sel-btn').forEach(b=>b.classList.remove('selected','push-selected'));
+    if(val>0) btn.classList.add('push-selected'); else btn.classList.add('selected');
+    updatePreview();
+  }
+
+  function updatePreview(){
+    const useNum = totalUses+1;
+    const devSec = calcDevSec();
+    const pushLabel = pushStops===0?'':pushStops>0?`  +${pushStops}段増感`:`  ${pushStops}段減感`;
+    const tankLabel = tankCount===2?'  タンク2本':'';
+    document.getElementById('c41Preview').textContent = `${useNum}回目として計算\n現像時間：${fmtSecLong(devSec)}（${devSec}秒）${pushLabel}${tankLabel}`;
+  }
+
+  function resetLiquid(){
+    if(confirm('現像液をリセットして使用回数を0に戻しますか？')){
+      totalUses=0; saveUses(0);
+      document.getElementById('c41TotalVal').textContent=0;
+      document.getElementById('c41SavedBadge').textContent='✅ リセットしました';
+      updatePreview();
     }
-  ];
-}
+  }
 
-const PHASES=["準備","現像","停止","漂白","定着","水洗","乾燥"];
-let steps=[], currentStep=0;
+  function startGuide(){
+    document.getElementById('colorSetup').classList.add('hidden');
+    buildAndStart();
+  }
+
+  function buildAndStart(){
+    const devSec = calcDevSec();
+    const useNum = totalUses+1;
+    const pushLabel = pushStops===0?'標準':pushStops>0?`+${pushStops}段増感`:`${pushStops}段減感`;
+    const tankLabel = tankCount===2?'（タンク2本処理）':'';
+
+    steps = [
+      { phase:"準備", title:"薬液の温度確認", desc:`スービドーで現像液を<strong>38℃</strong>に安定させます。漂白液・定着液も一緒に温めておきましょう。`, tags:[{type:"temp",text:"38℃"},{type:"warn",text:"±0.5℃以内"}], checklist:["現像液 38℃ ✓","漂白液 温め中","定着液 温め中"], timer:null },
+      { phase:"準備", title:"ダークバッグの準備", desc:`ダークバッグに必要なものを全部入れてからチャックを閉めます。入れ忘れると途中で開けられません。`, tags:[{type:"warn",text:"入れ忘れ注意"}], checklist:["フィルム","現像タンク（本体）","リール","タンクのフタ","ハサミ"], timer:null },
+      { phase:"準備", title:"フィルムをタンクへ", desc:`ダークバッグの中でフィルムをリールに巻き、タンクに入れてキャップを閉めます。${tankCount===2?'<br><br>今回は<strong>2本同時処理</strong>です。':''}`, tags:[{type:"warn",text:"完全遮光必須"},{type:"info",text:"ダークバッグ使用"},...(tankCount===2?[{type:"info",text:"2本同時"}]:[])], checklist:tankCount===2?["フィルム1本目リールに巻いた","フィルム2本目リールに巻いた","タンクに入れてキャップ締めた"]:["フィルムをリールに巻いた","タンクに入れた","キャップしっかり締めた"], timer:null },
+      { phase:"準備", title:"前浴（プレウォッシュ）", desc:`38℃のお湯でタンクを温め、現像ムラを防ぎます。<strong>1分間</strong>処理後お湯を捨てます。なしでもOKです。`, tags:[{type:"temp",text:"38℃の水"},{type:"time",text:"1分"},{type:"info",text:"なしでもOK"}], checklist:[], timer:60, timerLabel:"前浴", agitation:"最初30秒：連続撹拌 → その後は静置" },
+      { phase:"現像", title:"現像液投入", desc:`現像液（38℃）を注いだらすぐにスタート。<br><br>設定：<strong>${useNum}回目・${pushLabel}${tankLabel}</strong><br>現像時間：<strong>${fmtSecLong(devSec)}（${devSec}秒）</strong>`, tags:[{type:"temp",text:"38℃"},{type:"time",text:fmtSec(devSec)},...(pushStops!==0?[{type:"push",text:pushStops>0?`+${pushStops}段増感`:`${pushStops}段減感`}]:[]),{type:"info",text:`${useNum}回目`}], checklist:[], timer:devSec, timerLabel:"発色現像", agitationGuide:true, agitInterval:30 },
+      { phase:"現像", title:"現像液を回収", desc:`現像液を保存ボトルへ回収します。<strong>再利用可能</strong>です。`, tags:[{type:"info",text:"液を回収保存"},{type:"info",text:"再利用可"}], checklist:["現像液を保存ボトルへ回収","タンク内の液を完全に出した"], timer:null },
+      { phase:"停止", title:"停止液", desc:`クエン酸水（クエン酸15g / 水1L）を投入。<strong>30秒間</strong>連続撹拌して現像を止めます。`, tags:[{type:"time",text:"30秒"},{type:"temp",text:"30〜38度"}], checklist:[], timer:30, timerLabel:"停止", agitation:"全時間：連続撹拌" },
+      { phase:"停止", title:"水洗（停止後）", desc:`流水でタンク内を<strong>2〜3回</strong>すすいで停止液を洗い流します。`, tags:[{type:"info",text:"2〜3回すすぎ"}], checklist:["2〜3回すすいだ"], timer:null },
+      { phase:"漂白", title:"漂白液投入", desc:`漂白液（38℃±3℃）を投入します。<strong>8〜10分間</strong>処理。`, tags:[{type:"temp",text:"38℃±3℃"},{type:"time",text:"8〜10分"},{type:"info",text:"液回収可"}], checklist:[], timer:540, timerLabel:"漂白", agitationGuide:true, agitInterval:60 },
+      { phase:"漂白", title:"漂白液を回収", desc:`漂白液を保存ボトルへ回収します。<strong>再利用可能</strong>です。`, tags:[{type:"info",text:"液を回収保存"},{type:"info",text:"再利用可"}], checklist:["漂白液を保存ボトルへ回収","タンク内の液を完全に出した"], timer:null },
+      { phase:"漂白", title:"水洗（漂白後）", desc:`流水で<strong>2〜3回</strong>すすぎます。漂白の黄色が消えるまでしっかり洗います。`, tags:[{type:"info",text:"黄色が消えるまで"}], checklist:["2〜3回すすいだ","黄色みが消えた"], timer:null },
+      { phase:"定着", title:"定着液投入", desc:`定着液（38℃±3℃）を投入します。<strong>5分間</strong>処理。`, tags:[{type:"temp",text:"38℃±3℃"},{type:"time",text:"5分"},{type:"info",text:"液回収可"}], checklist:[], timer:300, timerLabel:"定着", agitationGuide:true, agitInterval:60 },
+      { phase:"定着", title:"定着液を回収", desc:`定着液を保存ボトルへ回収します。<strong>再利用可能</strong>です。`, tags:[{type:"info",text:"液を回収保存"},{type:"info",text:"再利用可"}], checklist:["定着液を保存ボトルへ回収","タンク内の液を完全に出した"], timer:null },
+      { phase:"水洗", title:"最終水洗", desc:`流水で<strong>5分間</strong>しっかり水洗いします。`, tags:[{type:"time",text:"5分"},{type:"info",text:"流水"}], checklist:[], timer:300, timerLabel:"最終水洗" },
+      { phase:"水洗", title:"水切り", desc:`水切り剤（ドライウェル等）を数滴入れ、<strong>30秒</strong>軽く撹拌してフィルムを取り出します。`, tags:[{type:"time",text:"30秒"},{type:"info",text:"ドライウェル等"}], checklist:[], timer:30, timerLabel:"水切り" },
+      { phase:"乾燥", title:"乾燥", desc:`フィルムをクリップで吊るして乾燥させます。<strong>浴室に吊るすのが一番</strong>。1〜2時間が目安です。`, tags:[{type:"time",text:"1〜2時間"},{type:"info",text:"浴室推奨"}], checklist:["フィルムをクリップで吊るした","浴室または埃のない場所に設置"], timer:null },
+    ];
+    currentPhases = ["準備","現像","停止","漂白","定着","水洗","乾燥"];
+
+    document.getElementById('continueBtn').onclick = () => {
+      totalUses += 1; saveUses(totalUses);
+      document.getElementById('c41TotalVal').textContent = totalUses;
+      document.getElementById('c41SavedBadge').textContent = `💾 保存済み：${totalUses}回使用済み`;
+      updatePreview();
+      document.getElementById('completeScreen').classList.remove('visible');
+      document.getElementById('colorSetup').classList.remove('hidden');
+      window.scrollTo({top:0,behavior:'smooth'});
+    };
+
+    document.getElementById('nextSessionBox').classList.remove('hidden');
+    startGuideScreen();
+  }
+
+  function onComplete(){
+    totalUses += 1; saveUses(totalUses);
+    const devSec = calcDevSec();
+    const pushLabel = pushStops===0?'標準':pushStops>0?`+${pushStops}段増感`:`${pushStops}段減感`;
+    const nextDevSec = Math.round(Math.round(BASE_SEC*Math.pow(1.03,totalUses))*(PUSH_MULT[String(pushStops)]||1.0));
+    document.getElementById('completeIcon').textContent='🎨';
+    document.getElementById('completeStats').innerHTML=`
+      <div class="stat-row"><span class="stat-label">現像時間</span><span class="stat-val">${fmtSecLong(calcDevSecForUse(totalUses-1))}</span></div>
+      <div class="stat-row"><span class="stat-label">液の使用回数</span><span class="stat-val">${totalUses}回完了 💾</span></div>
+      <div class="stat-row"><span class="stat-label">増感設定</span><span class="stat-val">${pushLabel}</span></div>
+    `;
+    document.getElementById('nextSessionBox').innerHTML=`<strong>次回の現像時間（参考）</strong><br>${totalUses+1}回目として ${fmtSecLong(nextDevSec)}`;
+    document.getElementById('nextSessionBox').classList.remove('hidden');
+  }
+
+  function calcDevSecForUse(n){
+    const strict = Math.round(BASE_SEC * Math.pow(1.03, n));
+    return Math.round(strict * (PUSH_MULT[String(pushStops)]||1.0));
+  }
+
+  return { initUI, changeTotal, selectTank, selectPush, updatePreview, resetLiquid, startGuide:buildAndStart, onComplete };
+})();
+
+// ========== BW モジュール ==========
+const bw = (() => {
+  const LS_FIX_KEY = 'bw_fix_count';
+  const TEMP_FACTOR = {18:1.30,19:1.15,20:1.00,21:0.88,22:0.78,23:0.70,24:0.62};
+  const FILMS = {
+    'MARIX100':{name:'MARIX 100',baseSec:330,note:'MX-76原液：5〜6分（EI100）',eiNote:''},
+    'MARIX200':{name:'MARIX 200',baseSec:390,note:'MX-76原液：6〜7分（EI200）',eiNote:''},
+    'MARIX400':{name:'MARIX 400',baseSec:420,note:'MX-76原液：7分',eiNote:'⚠️ MX-76使用時はEI125で撮影してください'},
+    'DELTA100':{name:'ILFORD DELTA 100',baseSec:480,note:'D-76原液参考値：8分（Massive Dev Chartで要確認）',eiNote:''},
+    'OTHER':{name:'その他',baseSec:0,note:'Massive Dev Chartでフィルム名とD-76原液の時間を確認してください',eiNote:''},
+  };
+
+  let filmKey = 'MARIX100';
+  let devTemp = 20;
+  let useQW = false;
+  let fixCount = 0;
+  let clearingTimeSec = 225; // 3:45 → ×2 = 7:30
+  let fixTimeSec = 450;
+
+  function loadFixCount(){ try{ return parseInt(localStorage.getItem(LS_FIX_KEY)||'0',10)||0; }catch(e){return 0;} }
+  function saveFixCount(n){ try{ localStorage.setItem(LS_FIX_KEY,String(n)); }catch(e){} }
+
+  function calcDevSec(){
+    const film = FILMS[filmKey];
+    if(!film||film.baseSec===0) return 0;
+    return Math.round(film.baseSec*(TEMP_FACTOR[devTemp]||1.0));
+  }
+
+  function initUI(){
+    fixCount = loadFixCount();
+    document.getElementById('bwFixCountVal').textContent = fixCount;
+    document.getElementById('bwFixBadge').textContent = fixCount>0?`💾 前回の記録：${fixCount}本使用済み`:'';
+    document.getElementById('bwTempVal').textContent = devTemp;
+    updatePreview();
+  }
+
+  function selectFilm(btn, key){
+    filmKey = key;
+    document.querySelectorAll('#bwFilmGroup .sel-btn').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+    const ci=document.getElementById('bwCustomFilm');
+    if(key==='OTHER') ci.classList.add('visible'); else ci.classList.remove('visible');
+    updatePreview();
+  }
+
+  function changeTemp(delta){
+    devTemp = Math.max(18, Math.min(24, devTemp+delta));
+    document.getElementById('bwTempVal').textContent = devTemp;
+    const note=document.getElementById('bwTempNote');
+    if(devTemp===20) note.textContent='20℃が標準です。公式データは20℃基準。';
+    else if(devTemp<20) note.textContent=`${devTemp}℃：20℃より低いため時間が長くなります（目安）`;
+    else note.textContent=`${devTemp}℃：20℃より高いため時間が短くなります（目安）`;
+    updatePreview();
+  }
+
+  function selectQW(btn, val){
+    useQW = val;
+    document.querySelectorAll('#bwQwGroup .sel-btn').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+  }
+
+  function changeFixCount(delta){
+    fixCount = Math.max(0, fixCount+delta);
+    document.getElementById('bwFixCountVal').textContent = fixCount;
+    document.getElementById('bwFixBadge').textContent = '';
+  }
+
+  function resetFixCount(){
+    if(confirm('定着液の使用本数を0にリセットしますか？')){
+      fixCount=0; saveFixCount(0);
+      document.getElementById('bwFixCountVal').textContent=0;
+      document.getElementById('bwFixBadge').textContent='✅ リセットしました';
+    }
+  }
+
+  function changeClearingMin(delta){
+    clearingTimeSec = Math.max(30, Math.min(600, clearingTimeSec+delta*60));
+    fixTimeSec = Math.min(600, Math.max(300, clearingTimeSec*2));
+    document.getElementById('defaultFixBtn').classList.remove('selected');
+    updateClearingUI();
+    const fixStep = steps.find(s=>s.timerLabel==='定着');
+    if(fixStep) fixStep.timer = fixTimeSec;
+  }
+
+  function changeClearingSec(delta){
+    clearingTimeSec = Math.max(30, Math.min(600, clearingTimeSec+delta));
+    fixTimeSec = Math.min(600, Math.max(300, clearingTimeSec*2));
+    document.getElementById('defaultFixBtn').classList.remove('selected');
+    updateClearingUI();
+    const fixStep = steps.find(s=>s.timerLabel==='定着');
+    if(fixStep) fixStep.timer = fixTimeSec;
+  }
+
+  function useDefaultFix(btn){
+    clearingTimeSec=225; fixTimeSec=450;
+    btn.classList.add('selected');
+    updateClearingUI();
+    const fixStep = steps.find(s=>s.timerLabel==='定着');
+    if(fixStep) fixStep.timer = fixTimeSec;
+  }
+
+  function updateClearingUI(){
+    const cm=Math.floor(clearingTimeSec/60), cs=clearingTimeSec%60;
+    document.getElementById('clearingDisplay').textContent=`${cm}:${String(cs).padStart(2,'0')}`;
+    document.getElementById('clearingPreview').textContent=`定着時間：${fmtSecLong(fixTimeSec)}（クリアリング×2）`;
+  }
+
+  function updatePreview(){
+    const film=FILMS[filmKey], devSec=calcDevSec();
+    if(filmKey==='OTHER'){
+      document.getElementById('bwPreview').textContent='Massive Dev Chartで確認してから開始してください';
+      document.getElementById('bwFilmNote').textContent=film.note;
+      return;
+    }
+    document.getElementById('bwPreview').textContent = devTemp!==20
+      ? `${fmtSecLong(devSec)}（${devSec}秒）\n※ ${devTemp}℃補正値（目安）\n20℃基準：${fmtSecLong(film.baseSec)}`
+      : `${fmtSecLong(devSec)}（${devSec}秒）`;
+    document.getElementById('bwFilmNote').textContent = film.note+(film.eiNote?'\n'+film.eiNote:'');
+  }
+
+  function startGuide(){
+    document.getElementById('bwSetup').classList.add('hidden');
+    buildAndStart();
+  }
+
+  function buildAndStart(){
+    const devSec = calcDevSec();
+    const film = FILMS[filmKey];
+    const filmName = filmKey==='OTHER'?(document.getElementById('bwCustomFilm').value||'その他'):film.name;
+    const tempStr = `${devTemp}℃`;
+
+    steps = [
+      { phase:"準備", title:"薬液の温度確認", desc:`現像液・定着液を<strong>${tempStr}</strong>に合わせます。温度計で確認してください。`, tags:[{type:"temp",text:tempStr},{type:"info",text:"20℃が標準"}], checklist:["現像液 温度確認 ✓","定着液 温度確認 ✓","停止液（またはクエン酸水）準備"], timer:null },
+      { phase:"準備", title:"ダークバッグの準備", desc:`ダークバッグに必要なものを全部入れてからチャックを閉めます。`, tags:[{type:"warn",text:"入れ忘れ注意"}], checklist:["フィルム","現像タンク（本体）","リール","タンクのフタ","ハサミ"], timer:null },
+      { phase:"準備", title:"フィルムをタンクへ", desc:`ダークバッグの中でフィルムをリールに巻き、タンクに入れてキャップを閉めます。`, tags:[{type:"warn",text:"完全遮光必須"},{type:"info",text:"ダークバッグ使用"}], checklist:["フィルムをリールに巻いた","タンクに入れた","キャップしっかり締めた"], timer:null },
+      { phase:"現像", title:"現像液投入", desc:`現像液（${tempStr}）を注いだらすぐにスタート。バンピングしてから撹拌を開始してください。<br><br>フィルム：<strong>${filmName}</strong><br>現像時間：<strong>${devSec>0?fmtSecLong(devSec)+'（'+devSec+'秒）':'Massive Dev Chartで確認した時間'}</strong>`, tags:[{type:"temp",text:tempStr},{type:"time",text:devSec>0?fmtSec(devSec):'要確認'},{type:"info",text:filmName}], checklist:[], timer:devSec||null, timerLabel:"発色現像", agitationGuide:true, agitInterval:30 },
+      { phase:"停止", title:"停止液", desc:`クエン酸水（クエン酸15g / 水1L）を投入。<strong>30秒間</strong>連続撹拌して現像を止めます。`, tags:[{type:"time",text:"30秒"}], checklist:[], timer:30, timerLabel:"停止", agitation:"全時間：連続撹拌" },
+      { phase:"定着", title:"クリアリングタイム確認", desc:`定着液に<strong>フィルムの切れ端</strong>を浸して透明になるまでの時間を測り、下の入力欄に入力してください。定着時間が自動で設定されます。<br><br>切れ端がない場合はデフォルト（7分30秒）のまま進んでください。`, tags:[{type:"info",text:"クリアリングタイム"},{type:"time",text:"×2が定着時間"}], checklist:[], timer:null, showClearing:true },
+      { phase:"定着", title:"定着液投入", desc:`スーパーフジフィックス-L（<strong>15〜25℃</strong>）を投入します。<br>希釈：原液1＋水2（300mLタンクなら原液100mL＋水200mL）<br><br>定着時間：<strong>${fmtSecLong(fixTimeSec)}</strong>`, tags:[{type:"temp",text:"15〜25℃"},{type:"time",text:fmtSec(fixTimeSec)},{type:"info",text:"液回収可"}], checklist:[], timer:fixTimeSec, timerLabel:"定着", agitation:"最初30秒：連続撹拌\n以降：30秒〜1分ごとに数回穏やかに反転" },
+      { phase:"定着", title:"定着液を回収", desc:`定着液を保存ボトルへ回収します。再利用可能ですが、<strong>使用本数を記録</strong>しておき、次回使用前にクリアリングタイムで確認してください。`, tags:[{type:"info",text:"液を回収保存"},{type:"warn",text:"使用本数を記録"}], checklist:["定着液を保存ボトルへ回収","使用本数を記録した"], timer:null },
+      ...(useQW ? [
+        { phase:"水洗", title:"予備水洗", desc:`水を入れて<strong>30秒間</strong>すすぎます。`, tags:[{type:"time",text:"30秒"}], checklist:[], timer:30, timerLabel:"予備水洗" },
+        { phase:"水洗", title:"富士QW浴", desc:`富士QW使用液を投入し<strong>1分間</strong>処理します。`, tags:[{type:"time",text:"1分"}], checklist:[], timer:60, timerLabel:"富士QW", agitation:"全時間：穏やかに撹拌" },
+        { phase:"水洗", title:"流水水洗（QW後）", desc:`流水で<strong>5分間</strong>水洗いします。`, tags:[{type:"time",text:"5分"},{type:"temp",text:"15〜25℃"}], checklist:[], timer:300, timerLabel:"水洗" },
+      ] : [
+        { phase:"水洗", title:"水洗", desc:`流水で<strong>20〜30分間</strong>水洗いします。水温15〜25℃。`, tags:[{type:"time",text:"20〜30分"},{type:"temp",text:"15〜25℃"}], checklist:[], timer:1200, timerLabel:"水洗" },
+      ]),
+      { phase:"水洗", title:"水切り", desc:`水切り剤（ドライウェル等）を数滴入れ、<strong>30秒</strong>軽く撹拌してフィルムを取り出します。`, tags:[{type:"time",text:"30秒"},{type:"info",text:"ドライウェル等"}], checklist:[], timer:30, timerLabel:"水切り" },
+      { phase:"乾燥", title:"乾燥", desc:`フィルムをクリップで吊るして乾燥させます。<strong>浴室に吊るすのが一番</strong>。完全に乾いてからカットしてください。`, tags:[{type:"time",text:"1〜2時間"},{type:"info",text:"浴室推奨"}], checklist:["フィルムをクリップで吊るした","浴室または埃のない場所に設置"], timer:null },
+    ];
+    currentPhases = ["準備","現像","停止","定着","水洗","乾燥"];
+
+    document.getElementById('continueBtn').onclick = () => {
+      document.getElementById('completeScreen').classList.remove('visible');
+      document.getElementById('bwSetup').classList.remove('hidden');
+      window.scrollTo({top:0,behavior:'smooth'});
+    };
+    document.getElementById('nextSessionBox').classList.add('hidden');
+    startGuideScreen();
+  }
+
+  function onComplete(){
+    fixCount += 1; saveFixCount(fixCount);
+    document.getElementById('bwFixCountVal').textContent = fixCount;
+    document.getElementById('bwFixBadge').textContent = `💾 保存済み：${fixCount}本使用済み`;
+    const devSec = calcDevSec();
+    const filmName = filmKey==='OTHER'?(document.getElementById('bwCustomFilm').value||'その他'):FILMS[filmKey].name;
+    document.getElementById('completeIcon').textContent='⬛';
+    document.getElementById('completeStats').innerHTML=`
+      <div class="stat-row"><span class="stat-label">フィルム</span><span class="stat-val">${filmName}</span></div>
+      <div class="stat-row"><span class="stat-label">現像温度</span><span class="stat-val">${devTemp}℃</span></div>
+      <div class="stat-row"><span class="stat-label">現像時間</span><span class="stat-val">${filmKey!=='OTHER'?fmtSecLong(devSec):'手動設定'}</span></div>
+      <div class="stat-row"><span class="stat-label">定着時間</span><span class="stat-val">${fmtSecLong(fixTimeSec)}</span></div>
+      <div class="stat-row"><span class="stat-label">定着液累計</span><span class="stat-val">${fixCount}本 💾</span></div>
+    `;
+    document.getElementById('nextSessionBox').classList.add('hidden');
+  }
+
+  return { initUI, selectFilm, changeTemp, selectQW, changeFixCount, resetFixCount, changeClearingMin, changeClearingSec, useDefaultFix, updateClearingUI, updatePreview, startGuide, onComplete };
+})();
+
+// ========== ガイド共通エンジン ==========
+let steps = [], currentStep = 0, currentPhases = [];
 let timerInterval=null, timerRemaining=0, timerTotal=0, timerRunning=false;
 let checkStates={};
+let agitState='idle', agitElapsed=0, agitInterval=30;
 
-// ---- 撹拌ガイド state ----
-// フェーズ: 'idle' | 'bump' | 'continuous' | 'interval' | 'done'
-let agitState = 'idle';
-let agitElapsed = 0;  // 現像開始からの秒数
-let agitIntervalSec = 30; // 撹拌インターバル（秒）
-let agitNextAt = 0;  // 次の撹拌タイミング（elapsed秒）
-let agitLapStart = 0; // 直前の撹拌開始elapsed
-
-function startGuide() {
-  steps = buildSteps();
-  currentStep = 0;
-  checkStates = {};
-  document.getElementById('setupScreen').classList.add('hidden');
+function startGuideScreen(){
+  currentStep=0; checkStates={};
+  // セットアップ画面を全部非表示
+  document.getElementById('colorSetup').classList.add('hidden');
+  document.getElementById('bwSetup').classList.add('hidden');
   document.getElementById('guideScreen').classList.remove('hidden');
   renderStep();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-function backToSetup() {
-  clearTimers();
-  document.getElementById('completeScreen').classList.remove('visible');
-  document.getElementById('guideScreen').classList.add('hidden');
-  document.getElementById('setupScreen').classList.remove('hidden');
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-function continueSession() {
-  clearTimers();
-  totalUses += 1; // 現像液の使用回数を1増やす
-  saveUses(totalUses);
-  document.getElementById('totalRollVal').textContent = totalUses;
-  document.getElementById('savedBadge').textContent = `💾 保存済み：${totalUses}回使用済み`;
-  document.getElementById('completeScreen').classList.remove('visible');
-  document.getElementById('guideScreen').classList.add('hidden');
-  document.getElementById('setupScreen').classList.remove('hidden');
-  updatePreview();
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-function renderPhaseStrip() {
-  const strip = document.getElementById('phaseStrip');
-  const cur = steps[currentStep].phase;
-  const done = new Set();
+function renderPhaseStrip(){
+  const strip=document.getElementById('phaseStrip');
+  const cur=steps[currentStep].phase;
+  const done=new Set();
   for(let i=0;i<currentStep;i++) done.add(steps[i].phase);
-  strip.innerHTML = PHASES.map(p=>{
+  strip.innerHTML=currentPhases.map(p=>{
     let cls='phase-dot';
     if(p===cur) cls+=' active'; else if(done.has(p)) cls+=' done';
     return `<div class="${cls}">${p}</div>`;
   }).join('');
 }
 
-function renderStep() {
+function renderStep(){
   if(currentStep>=steps.length){ showComplete(); return; }
-  const step = steps[currentStep];
-  const pct = Math.round((currentStep/steps.length)*100);
-  document.getElementById('progressFill').style.width=pct+'%';
+  const step=steps[currentStep];
+  document.getElementById('progressFill').style.width=Math.round((currentStep/steps.length)*100)+'%';
   document.getElementById('progressText').textContent=step.phase;
   document.getElementById('progressFrac').textContent=`${currentStep+1} / ${steps.length}`;
   renderPhaseStrip();
-  document.getElementById('stepNumber').textContent=`STEP ${String(currentStep+1).padStart(2,'0')}`;
+  document.getElementById('stepNumber').textContent=`STEP ${String(currentStep+1).padStart(2,'00')}`;
   document.getElementById('stepTitle').textContent=step.title;
   document.getElementById('stepDesc').innerHTML=step.desc;
   document.getElementById('stepTags').innerHTML=(step.tags||[]).map(t=>`<span class="tag ${t.type}">${t.text}</span>`).join('');
@@ -519,21 +794,30 @@ function renderStep() {
     const div=document.createElement('div');
     div.className='check-item'+(checkStates[currentStep][i]?' checked':'');
     div.innerHTML=`<div class="check-box">${checkStates[currentStep][i]?'✓':''}</div><span>${item}</span>`;
-    div.onclick=()=>{checkStates[currentStep][i]=!checkStates[currentStep][i];renderStep();};
+    div.onclick=()=>{ checkStates[currentStep][i]=!checkStates[currentStep][i]; renderStep(); };
     cl.appendChild(div);
   });
 
   clearTimers();
-
   const ta=document.getElementById('timerArea');
   const as=document.getElementById('agitStatus');
   const ah=document.getElementById('agitationHint');
+  const ca=document.getElementById('clearingArea');
 
-  if(step.agitationGuide) {
-    // 現像ステップ：撹拌ガイドモード（30秒連続+30秒インターバル）
+  ca.classList.remove('visible');
+  as.classList.remove('visible');
+  ah.classList.remove('visible');
+  ta.classList.remove('visible');
+
+  if(step.showClearing){
+    ca.classList.add('visible');
+    bw.updateClearingUI();
+  }
+
+  if(step.agitationGuide && step.timer){
+    agitInterval = step.agitInterval || 30;
     ta.classList.add('visible');
     as.classList.add('visible');
-    ah.classList.remove('visible');
     timerRemaining=step.timer; timerTotal=step.timer; timerRunning=false;
     document.getElementById('timerStartBtn').textContent='▶ 液を注いだ → スタート';
     document.getElementById('timerStartBtn').className='btn btn-primary';
@@ -542,218 +826,49 @@ function renderStep() {
     updateTimerDisplay();
     agitState='idle'; agitElapsed=0;
     updateAgitStatus();
-  } else if(step.agitationGuide60) {
-    // 漂白・定着ステップ：撹拌ガイドモード（30秒連続+60秒インターバル）
+  } else if(step.timer){
     ta.classList.add('visible');
-    as.classList.add('visible');
-    ah.classList.remove('visible');
-    timerRemaining=step.timer; timerTotal=step.timer; timerRunning=false;
-    document.getElementById('timerStartBtn').textContent='▶ 液を注いだ → スタート';
-    document.getElementById('timerStartBtn').className='btn btn-primary';
-    document.getElementById('timerLabel').textContent=step.timerLabel||'タイマー';
-    document.getElementById('timerProgressFill').style.width='100%';
-    updateTimerDisplay();
-    agitState='idle'; agitElapsed=0;
-    updateAgitStatus60();
-  } else if(step.timer) {
-    ta.classList.add('visible');
-    as.classList.remove('visible');
     timerRemaining=step.timer; timerTotal=step.timer; timerRunning=false;
     document.getElementById('timerStartBtn').textContent='▶ スタート';
     document.getElementById('timerStartBtn').className='btn btn-primary';
     document.getElementById('timerLabel').textContent=step.timerLabel||'タイマー';
     document.getElementById('timerProgressFill').style.width='100%';
     updateTimerDisplay();
-    if(step.agitation){
-      ah.classList.add('visible');
-      ah.innerHTML='🔄 '+step.agitation.replace(/\n/g,'<br>');
-    } else { ah.classList.remove('visible'); }
-  } else {
-    ta.classList.remove('visible');
-    as.classList.remove('visible');
-    if(step.agitation){
-      ah.classList.add('visible');
-      ah.innerHTML='🔄 '+step.agitation.replace(/\n/g,'<br>');
-    } else { ah.classList.remove('visible'); }
+    if(step.agitation){ ah.classList.add('visible'); ah.innerHTML='🔄 '+step.agitation.replace(/\n/g,'<br>'); }
   }
 
   document.getElementById('prevBtn').style.opacity=currentStep===0?'0.3':'1';
   document.getElementById('prevBtn').disabled=currentStep===0;
   const nb=document.getElementById('nextBtn');
-  if(currentStep===steps.length-1){nb.textContent='現像完了 ✓';nb.className='btn btn-success';}
-  else{nb.textContent='次のステップ →';nb.className='btn btn-primary';}
+  if(currentStep===steps.length-1){ nb.textContent='現像完了 ✓'; nb.className='btn btn-success'; }
+  else{ nb.textContent='次のステップ →'; nb.className='btn btn-primary'; }
 }
 
-// ---- 撹拌ガイド（漂白・定着：60秒インターバル）----
-function updateAgitStatus60() {
-  const phaseEl = document.getElementById('agitPhase');
-  const msgEl = document.getElementById('agitMessage');
-  const cdEl = document.getElementById('agitCountdown');
-  const nextEl = document.getElementById('agitNext');
-  const elapsed = agitElapsed;
-  const CONTINUOUS_END = 30;
-  const INTERVAL = 60;
+function updateAgitStatus(){
+  const phaseEl=document.getElementById('agitPhase');
+  const msgEl=document.getElementById('agitMessage');
+  const cdEl=document.getElementById('agitCountdown');
+  const nextEl=document.getElementById('agitNext');
+  const elapsed=agitElapsed;
+  const CONT=30, INT=agitInterval;
+  const isBump = currentMode==='color' && steps[currentStep]?.agitInterval===30;
 
-  if(agitState==='idle') {
-    phaseEl.textContent='AGITATION GUIDE';
-    msgEl.textContent='液を注いだらスタート';
-    msgEl.className='agit-message';
-    cdEl.textContent=''; nextEl.textContent=''; return;
-  }
-  if(elapsed===0) {
-    phaseEl.textContent='0秒 — バンピング';
-    msgEl.textContent='🔨 コンコン叩いて気泡を抜く';
-    msgEl.className='agit-message active';
-    cdEl.textContent=''; nextEl.textContent='→ すぐ連続撹拌を開始'; return;
-  }
-  if(elapsed < CONTINUOUS_END) {
-    const rem = CONTINUOUS_END - elapsed;
-    phaseEl.textContent=`${elapsed}秒経過 — 連続撹拌中`;
-    msgEl.textContent='🔄 連続撹拌してください';
-    msgEl.className='agit-message active';
-    cdEl.textContent=String(rem);
-    nextEl.textContent='→ 30秒で連続撹拌終了'; return;
-  }
-  if(elapsed === CONTINUOUS_END) {
-    phaseEl.textContent='30秒 — 連続撹拌終了';
-    msgEl.textContent='✅ 連続撹拌終了、静置';
-    msgEl.className='agit-message done';
-    cdEl.textContent=''; nextEl.textContent='→ 次の撹拌：90秒'; return;
-  }
-  const afterCont = elapsed - CONTINUOUS_END;
-  const cyclePos = afterCont % INTERVAL;
-  const cycleNum = Math.floor(afterCont / INTERVAL);
-  const nextAgitAt = CONTINUOUS_END + (cycleNum + 1) * INTERVAL;
+  if(agitState==='idle'){ phaseEl.textContent='AGITATION GUIDE'; msgEl.textContent='液を注いだらスタート'; msgEl.className='agit-message'; cdEl.textContent=''; nextEl.textContent=''; return; }
+  if(elapsed===0 && isBump){ phaseEl.textContent='0秒 — バンピング'; msgEl.textContent='🔨 コンコン叩いて気泡を抜く'; msgEl.className='agit-message active'; cdEl.textContent=''; nextEl.textContent='→ すぐ連続撹拌を開始'; return; }
+  if(elapsed<CONT){ phaseEl.textContent=`${elapsed}秒経過 — 連続撹拌中`; msgEl.textContent='🔄 連続撹拌してください'; msgEl.className='agit-message active'; cdEl.textContent=String(CONT-elapsed); nextEl.textContent='→ 30秒で連続撹拌終了'; return; }
+  if(elapsed===CONT){ phaseEl.textContent='30秒 — 連続撹拌終了'; msgEl.textContent='✅ 連続撹拌終了、静置'; msgEl.className='agit-message done'; cdEl.textContent=''; nextEl.textContent=`→ 次の撹拌：${CONT+INT}秒`; return; }
 
-  if(cyclePos === 0 && afterCont >= INTERVAL) {
-    phaseEl.textContent=`${elapsed}秒 — 撹拌タイミング！`;
-    msgEl.textContent='🔄 撹拌してください（10秒）';
-    msgEl.className='agit-message active';
-    cdEl.textContent='10';
-    nextEl.textContent=`→ 次の撹拌：${nextAgitAt}秒`;
-  } else if(cyclePos <= 10 && afterCont >= INTERVAL) {
-    phaseEl.textContent=`${elapsed}秒経過 — 撹拌中`;
-    msgEl.textContent='🔄 撹拌中…';
-    msgEl.className='agit-message active';
-    cdEl.textContent=String(10-cyclePos);
-    nextEl.textContent=`→ 次の撹拌：${nextAgitAt}秒`;
-  } else {
-    const untilNext = nextAgitAt - elapsed;
-    phaseEl.textContent=`${elapsed}秒経過 — 静置中`;
-    msgEl.textContent='静置';
-    msgEl.className='agit-message';
-    cdEl.textContent='';
-    nextEl.textContent=`→ 次の撹拌まで：${untilNext}秒（${nextAgitAt}秒）`;
-  }
+  const afterCont=elapsed-CONT;
+  const cyclePos=afterCont%INT;
+  const cycleNum=Math.floor(afterCont/INT);
+  const nextAgitAt=CONT+(cycleNum+1)*INT;
+  const lapSec = INT===30 ? 5 : 10;
+
+  if(cyclePos===0 && afterCont>=INT){ phaseEl.textContent=`${elapsed}秒 — 撹拌！`; msgEl.textContent=`🔄 ${INT===30?'3〜4回反転':'10秒撹拌'}してください`; msgEl.className='agit-message active'; cdEl.textContent=String(lapSec); nextEl.textContent=`→ 次の撹拌：${nextAgitAt}秒`; }
+  else if(cyclePos<=lapSec && afterCont>=INT){ phaseEl.textContent=`${elapsed}秒経過 — 撹拌中`; msgEl.textContent='🔄 撹拌中…'; msgEl.className='agit-message active'; cdEl.textContent=String(lapSec-cyclePos); nextEl.textContent=`→ 次の撹拌：${nextAgitAt}秒`; }
+  else{ const untilNext=nextAgitAt-elapsed; phaseEl.textContent=`${elapsed}秒経過 — 静置中`; msgEl.textContent='静置'; msgEl.className='agit-message'; cdEl.textContent=''; nextEl.textContent=`→ 次の撹拌まで：${untilNext}秒（${nextAgitAt}秒）`; }
 }
 
-// ---- 撹拌ガイド（現像：30秒インターバル）----
-// タイムライン（現像ステップ）:
-// 0秒: スタート → バンピング促し
-// 0〜30秒: 連続撹拌フェーズ
-// 30秒: 連続撹拌終了アナウンス
-// 以降30秒ごと: 撹拌してください（10秒間アナウンス）
-
-function updateAgitStatus() {
-  const el = document.getElementById('agitStatus');
-  const phaseEl = document.getElementById('agitPhase');
-  const msgEl = document.getElementById('agitMessage');
-  const cdEl = document.getElementById('agitCountdown');
-  const nextEl = document.getElementById('agitNext');
-
-  const elapsed = agitElapsed;
-  const CONTINUOUS_END = 30;
-  const INTERVAL = 30;
-
-  if(agitState==='idle') {
-    phaseEl.textContent='AGITATION GUIDE';
-    msgEl.textContent='液を注いだらスタート';
-    msgEl.className='agit-message';
-    cdEl.textContent='';
-    nextEl.textContent='';
-    return;
-  }
-
-  if(elapsed===0) {
-    // バンピング
-    phaseEl.textContent='0秒 — バンピング';
-    msgEl.textContent='🔨 コンコン叩いて気泡を抜く';
-    msgEl.className='agit-message active';
-    cdEl.textContent='';
-    nextEl.textContent='→ すぐ連続撹拌を開始';
-    return;
-  }
-
-  if(elapsed < CONTINUOUS_END) {
-    const rem = CONTINUOUS_END - elapsed;
-    phaseEl.textContent=`${elapsed}秒経過 — 連続撹拌中`;
-    msgEl.textContent='🔄 連続撹拌してください';
-    msgEl.className='agit-message active';
-    cdEl.textContent=String(rem);
-    nextEl.textContent='→ 30秒で連続撹拌終了';
-    return;
-  }
-
-  if(elapsed === CONTINUOUS_END) {
-    phaseEl.textContent='30秒 — 連続撹拌終了';
-    msgEl.textContent='✅ 連続撹拌終了、静置';
-    msgEl.className='agit-message done';
-    cdEl.textContent='';
-    nextEl.textContent='→ 次の撹拌：60秒';
-    return;
-  }
-
-  // インターバル撹拌フェーズ（61秒〜）
-  // 撹拌タイミング: 60, 90, 120... (afterCont = 30, 60, 90...)
-  const afterCont = elapsed - CONTINUOUS_END;
-  const cyclePos = afterCont % INTERVAL; // 0〜29
-  const cycleNum = Math.floor(afterCont / INTERVAL);
-  const nextAgitAt = CONTINUOUS_END + (cycleNum + 1) * INTERVAL;
-
-  if(cyclePos === 0 && afterCont >= INTERVAL) {
-    phaseEl.textContent=`${elapsed}秒 — 撹拌タイミング！`;
-    msgEl.textContent='🔄 撹拌してください（10秒）';
-    msgEl.className='agit-message active';
-    cdEl.textContent='10';
-    nextEl.textContent=`→ 次の撹拌：${nextAgitAt}秒`;
-  } else if(cyclePos <= 10 && afterCont >= INTERVAL) {
-    phaseEl.textContent=`${elapsed}秒経過 — 撹拌中`;
-    msgEl.textContent='🔄 撹拌中…';
-    msgEl.className='agit-message active';
-    cdEl.textContent=String(10-cyclePos);
-    nextEl.textContent=`→ 次の撹拌：${nextAgitAt}秒`;
-  } else {
-    const untilNext = nextAgitAt - elapsed;
-    phaseEl.textContent=`${elapsed}秒経過 — 静置中`;
-    msgEl.textContent='静置';
-    msgEl.className='agit-message';
-    cdEl.textContent='';
-    nextEl.textContent=`→ 次の撹拌まで：${untilNext}秒（${nextAgitAt}秒）`;
-  }
-}
-
-// ---- Audio ----
-let audioCtx=null;
-function getAudioCtx(){if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
-function playBeep(freq,duration,volume,delay){
-  try{
-    const ctx=getAudioCtx();
-    const osc=ctx.createOscillator();
-    const gain=ctx.createGain();
-    osc.connect(gain);gain.connect(ctx.destination);
-    osc.frequency.value=freq;osc.type='sine';
-    const t=ctx.currentTime+(delay||0);
-    gain.gain.setValueAtTime(volume||0.4,t);
-    gain.gain.exponentialRampToValueAtTime(0.001,t+duration);
-    osc.start(t);osc.stop(t+duration);
-  }catch(e){}
-}
-function playFinishSound(){[0,0.3,0.6].forEach(o=>playBeep(880,0.25,0.6,o));}
-function playAgitStart(){playBeep(660,0.15,0.5);setTimeout(()=>playBeep(660,0.15,0.5),200);}
-function playAgitEnd(){playBeep(440,0.2,0.4);}
-function playContinuousEnd(){playBeep(550,0.3,0.5);setTimeout(()=>playBeep(550,0.3,0.5),350);}
-
-// ---- Timer ----
 function updateTimerDisplay(){
   const m=Math.floor(timerRemaining/60),s=timerRemaining%60;
   const el=document.getElementById('timerDisplay');
@@ -765,13 +880,12 @@ function updateTimerDisplay(){
 
 function startTimer(){
   if(timerRunning){
-    clearInterval(timerInterval);
-    timerRunning=false;
+    clearInterval(timerInterval); timerRunning=false;
     document.getElementById('timerStartBtn').textContent='▶ 再開';
     document.getElementById('timerStartBtn').className='btn btn-primary';
     updateTimerDisplay(); return;
   }
-  try{getAudioCtx();}catch(e){}
+  try{ getAudioCtx(); }catch(e){}
   timerRunning=true;
   document.getElementById('timerStartBtn').textContent='⏸ 一時停止';
   document.getElementById('timerStartBtn').className='btn btn-outline';
@@ -779,105 +893,76 @@ function startTimer(){
   const step=steps[currentStep];
   if(step.agitationGuide){
     agitState='running'; agitElapsed=0;
-    speak('バンピングしてください。');
-    setTimeout(()=>speak('連続撹拌を開始してください。'), 3000);
+    const isBump = currentMode==='color' && step.agitInterval===30;
+    if(isBump){ speak('バンピングしてください。'); setTimeout(()=>speak('連続撹拌を開始してください。'),3000); }
+    else { speak('連続撹拌を開始してください。'); }
     updateAgitStatus();
   }
-  if(step.agitationGuide60){
-    agitState='running'; agitElapsed=0;
-    speak('バンピングしてください。');
-    setTimeout(()=>speak('連続撹拌を開始してください。'), 3000);
-    updateAgitStatus60();
-  }
+
+  const INT=agitInterval;
+  const lapSec=INT===30?5:10;
+  const minAfterCont=INT; // 最初の撹拌タイミング（elapsed = CONT+INT）
 
   timerInterval=setInterval(()=>{
-    timerRemaining--;
-    agitElapsed++;
+    timerRemaining--; agitElapsed++;
     updateTimerDisplay();
 
     if(step.agitationGuide){
-      const e=agitElapsed;
-      const CONT=30, INT=30;
+      const e=agitElapsed, CONT=30;
       if(e===CONT){ playContinuousEnd(); speak('連続撹拌終了です。静置してください。'); }
       if(e>CONT){
         const afterCont=e-CONT;
         if(afterCont%INT===0){ playAgitStart(); speak('撹拌してください。'); }
-        if(afterCont%INT===10 && afterCont>=40){ playAgitEnd(); speak('撹拌終了。静置してください。'); }
+        if(afterCont%INT===lapSec && afterCont>=minAfterCont+lapSec){ playAgitEnd(); speak('撹拌終了。静置してください。'); }
       }
       updateAgitStatus();
     }
 
-    if(step.agitationGuide60){
-      const e=agitElapsed;
-      const CONT=30, INT=60;
-      if(e===CONT){ playContinuousEnd(); speak('連続撹拌終了です。静置してください。'); }
-      if(e>CONT){
-        const afterCont=e-CONT;
-        if(afterCont%INT===0){ playAgitStart(); speak('撹拌してください。'); }
-        if(afterCont%INT===10 && afterCont>=70){ playAgitEnd(); speak('撹拌終了。静置してください。'); }
-      }
-      updateAgitStatus60();
-    }
-
-    // 残り10秒ビープ
     if(timerRemaining>0&&timerRemaining<=10) playBeep(440,0.1,0.3);
     if(timerRemaining===10) speak('残り10秒です。');
 
     if(timerRemaining<=0){
-      clearInterval(timerInterval);
-      timerRunning=false;
-      agitState='done';
+      clearInterval(timerInterval); timerRunning=false; agitState='done';
       document.getElementById('timerDisplay').textContent='終了！';
       document.getElementById('timerDisplay').className='timer-display';
       document.getElementById('timerStartBtn').textContent='✓ 完了';
       document.getElementById('timerStartBtn').className='btn btn-success';
       playFinishSound();
-      speak('現像終了です。現像液を回収してください。');
+      speak('タイマー終了です。');
       if(navigator.vibrate) navigator.vibrate([200,100,200,100,400]);
     }
   },1000);
 }
 
 function resetTimer(){
-  clearInterval(timerInterval);
-  timerRunning=false;
+  clearInterval(timerInterval); timerRunning=false;
   timerRemaining=steps[currentStep]?.timer||0;
   agitState='idle'; agitElapsed=0;
-  document.getElementById('timerStartBtn').textContent=steps[currentStep]?.agitationGuide?'▶ 液を注いだ → スタート':'▶ スタート';
+  const step=steps[currentStep];
+  document.getElementById('timerStartBtn').textContent=step?.agitationGuide?'▶ 液を注いだ → スタート':'▶ スタート';
   document.getElementById('timerStartBtn').className='btn btn-primary';
   updateTimerDisplay();
-  if(steps[currentStep]?.agitationGuide) updateAgitStatus();
+  if(step?.agitationGuide) updateAgitStatus();
 }
 
-function clearTimers(){clearInterval(timerInterval);timerRunning=false;}
+function clearTimers(){ clearInterval(timerInterval); timerRunning=false; }
 
-function nextStep(){clearTimers();currentStep++;renderStep();window.scrollTo({top:0,behavior:'smooth'});}
-function prevStep(){if(currentStep===0)return;clearTimers();currentStep--;renderStep();window.scrollTo({top:0,behavior:'smooth'});}
+function nextStep(){
+  clearTimers(); currentStep++;
+  if(steps[currentStep]&&steps[currentStep].timerLabel==='定着'&&currentMode==='bw'){
+    steps[currentStep].timer = bw.fixTimeSec !== undefined ? bw.fixTimeSec : 450;
+  }
+  renderStep(); window.scrollTo({top:0,behavior:'smooth'});
+}
+function prevStep(){ if(currentStep===0)return; clearTimers(); currentStep--; renderStep(); window.scrollTo({top:0,behavior:'smooth'}); }
 
 function showComplete(){
   document.getElementById('guideScreen').classList.add('hidden');
-  document.getElementById('completeScreen').classList.add('visible');
-  const devSec=calcDevSec();
-  const useNum=totalUses+1;
-  const pushLabel=pushStops===0?'標準':pushStops>0?`+${pushStops}段増感`:`${pushStops}段減感`;
-  const nextTotal=totalUses+1;
-  const nextDevSec=Math.round(Math.round(BASE_SEC*Math.pow(1.03,nextTotal))*(PUSH_MULT[String(pushStops)]||1.0));
-
-  // 完了後に使用回数を保存
-  saveUses(nextTotal);
-
-  document.getElementById('completeStats').innerHTML=`
-    <div class="stat-row"><span class="stat-label">現像時間</span><span class="stat-val">${fmtSecLong(devSec)}</span></div>
-    <div class="stat-row"><span class="stat-label">液の使用回数（今回）</span><span class="stat-val">${useNum}回目</span></div>
-    <div class="stat-row"><span class="stat-label">増感設定</span><span class="stat-val">${pushLabel}</span></div>
-    <div class="stat-row"><span class="stat-label">液の累計使用回数</span><span class="stat-val">${nextTotal}回完了 💾</span></div>
-  `;
-  document.getElementById('nextSessionBox').innerHTML=
-    `<strong>次回の現像時間（参考）</strong><br>${nextTotal+1}回目として ${fmtSecLong(nextDevSec)}${pushStops!==0?`（${pushLabel}）`:''}`;
+  const cs=document.getElementById('completeScreen');
+  cs.classList.add('visible');
+  if(currentMode==='color') c41.onComplete();
+  else bw.onComplete();
 }
-
-// ---- Init ----
-initUI();
 </script>
 </body>
 </html>
