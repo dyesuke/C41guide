@@ -253,6 +253,15 @@
       <button class="sel-btn" onclick="bw.selectFilm(this,'OTHER')">その他</button>
     </div>
     <input class="custom-input" id="bwCustomFilm" type="text" placeholder="フィルム名を入力" oninput="bw.updatePreview()">
+    <div id="bwCustomTimeWrap" style="display:none;margin-top:12px;">
+      <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:8px;">現像時間を入力（Massive Dev Chart等で確認）</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <input id="bwCustomMin" type="number" min="1" max="60" value="8" style="width:60px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:18px;text-align:center;" oninput="bw.updateCustomTime()">
+        <span style="color:var(--muted);">分</span>
+        <input id="bwCustomSec" type="number" min="0" max="59" value="0" style="width:60px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:18px;text-align:center;" oninput="bw.updateCustomTime()">
+        <span style="color:var(--muted);">秒</span>
+      </div>
+    </div>
   </div>
 
   <div class="setup-section">
@@ -607,8 +616,23 @@ const bw = (() => {
     document.querySelectorAll('#bwFilmGroup .sel-btn').forEach(b=>b.classList.remove('selected'));
     btn.classList.add('selected');
     const ci=document.getElementById('bwCustomFilm');
-    if(key==='OTHER') ci.classList.add('visible'); else ci.classList.remove('visible');
+    const tw=document.getElementById('bwCustomTimeWrap');
+    if(key==='OTHER'){ ci.classList.add('visible'); tw.style.display='block'; }
+    else { ci.classList.remove('visible'); tw.style.display='none'; }
     updatePreview();
+  }
+
+  function updateCustomTime(){
+    const m = parseInt(document.getElementById('bwCustomMin').value)||0;
+    const s = parseInt(document.getElementById('bwCustomSec').value)||0;
+    const base = m*60+s;
+    const corrected = base>0 ? Math.round(base*(TEMP_FACTOR[devTemp]||1.0)) : 0;
+    if(corrected>0){
+      const label = devTemp!==20 ? `${fmtSecLong(corrected)}（${corrected}秒）\n※ ${devTemp}℃補正済み（20℃基準：${fmtSecLong(base)}）` : `${fmtSecLong(corrected)}（${corrected}秒）`;
+      document.getElementById('bwPreview').textContent = label;
+    } else {
+      document.getElementById('bwPreview').textContent = '時間を入力してください';
+    }
   }
 
   function changeTemp(delta){
@@ -618,7 +642,7 @@ const bw = (() => {
     if(devTemp===20) note.textContent='20℃が標準です。公式データは20℃基準。';
     else if(devTemp<20) note.textContent=`${devTemp}℃：20℃より低いため時間が長くなります（目安）`;
     else note.textContent=`${devTemp}℃：20℃より高いため時間が短くなります（目安）`;
-    updatePreview();
+    if(filmKey==='OTHER') updateCustomTime(); else updatePreview();
   }
 
   function selectQW(btn, val){
@@ -692,7 +716,9 @@ const bw = (() => {
   }
 
   function buildAndStart(){
-    const devSec = calcDevSec();
+    const devSec = filmKey==='OTHER'
+      ? Math.round((parseInt(document.getElementById('bwCustomMin').value||'0')*60 + parseInt(document.getElementById('bwCustomSec').value||'0'))*(TEMP_FACTOR[devTemp]||1.0))
+      : calcDevSec();
     const film = FILMS[filmKey];
     const filmName = filmKey==='OTHER'?(document.getElementById('bwCustomFilm').value||'その他'):film.name;
     const tempStr = `${devTemp}℃`;
@@ -701,7 +727,7 @@ const bw = (() => {
       { phase:"準備", title:"薬液の温度確認", desc:`現像液・定着液を<strong>${tempStr}</strong>に合わせます。温度計で確認してください。`, tags:[{type:"temp",text:tempStr},{type:"info",text:"20℃が標準"}], checklist:["現像液 温度確認 ✓","定着液 温度確認 ✓","停止液（またはクエン酸水）準備"], timer:null },
       { phase:"準備", title:"ダークバッグの準備", desc:`ダークバッグに必要なものを全部入れてからチャックを閉めます。`, tags:[{type:"warn",text:"入れ忘れ注意"}], checklist:["フィルム","現像タンク（本体）","リール","タンクのフタ","ハサミ"], timer:null },
       { phase:"準備", title:"フィルムをタンクへ", desc:`ダークバッグの中でフィルムをリールに巻き、タンクに入れてキャップを閉めます。`, tags:[{type:"warn",text:"完全遮光必須"},{type:"info",text:"ダークバッグ使用"}], checklist:["フィルムをリールに巻いた","タンクに入れた","キャップしっかり締めた"], timer:null },
-      { phase:"現像", title:"現像液投入", desc:`現像液（${tempStr}）を注いだらすぐにスタート。バンピングしてから撹拌を開始してください。<br><br>フィルム：<strong>${filmName}</strong><br>現像時間：<strong>${devSec>0?fmtSecLong(devSec)+'（'+devSec+'秒）':'Massive Dev Chartで確認した時間'}</strong>`, tags:[{type:"temp",text:tempStr},{type:"time",text:devSec>0?fmtSec(devSec):'要確認'},{type:"info",text:filmName}], checklist:[], timer:devSec||null, timerLabel:"発色現像", agitationGuide:true, agitInterval:30 },
+      { phase:"現像", title:"現像液投入", desc:`現像液（${tempStr}）を注いだらすぐにスタート。バンピングしてから撹拌を開始してください。<br><br>フィルム：<strong>${filmName}</strong><br>現像時間：<strong>${devSec>0?fmtSecLong(devSec)+'（'+devSec+'秒）':'未設定'}</strong>`, tags:[{type:"temp",text:tempStr},{type:"time",text:devSec>0?fmtSec(devSec):'要確認'},{type:"info",text:filmName}], checklist:[], timer:devSec>0?devSec:null, timerLabel:"発色現像", agitationGuide:true, agitInterval:30 },
       { phase:"停止", title:"停止液", desc:`クエン酸水（クエン酸15g / 水1L）を投入。<strong>30秒間</strong>連続撹拌して現像を止めます。`, tags:[{type:"time",text:"30秒"}], checklist:[], timer:30, timerLabel:"停止", agitation:"全時間：連続撹拌" },
       { phase:"定着", title:"クリアリングタイム確認", desc:`定着液に<strong>フィルムの切れ端</strong>を浸して透明になるまでの時間を測り、下の入力欄に入力してください。定着時間が自動で設定されます。<br><br>切れ端がない場合はデフォルト（7分30秒）のまま進んでください。`, tags:[{type:"info",text:"クリアリングタイム"},{type:"time",text:"×2が定着時間"}], checklist:[], timer:null, showClearing:true },
       { phase:"定着", title:"定着液投入", desc:`スーパーフジフィックス-L（<strong>15〜25℃</strong>）を投入します。<br>希釈：原液1＋水2（300mLタンクなら原液100mL＋水200mL）<br><br>定着時間：<strong>${fmtSecLong(fixTimeSec)}</strong>`, tags:[{type:"temp",text:"15〜25℃"},{type:"time",text:fmtSec(fixTimeSec)},{type:"info",text:"液回収可"}], checklist:[], timer:fixTimeSec, timerLabel:"定着", agitation:"最初30秒：連続撹拌\n以降：30秒〜1分ごとに数回穏やかに反転" },
@@ -744,7 +770,7 @@ const bw = (() => {
     document.getElementById('nextSessionBox').classList.add('hidden');
   }
 
-  return { initUI, selectFilm, changeTemp, selectQW, changeFixCount, resetFixCount, changeClearingMin, changeClearingSec, useDefaultFix, updateClearingUI, updatePreview, startGuide, onComplete };
+  return { initUI, selectFilm, changeTemp, selectQW, changeFixCount, resetFixCount, changeClearingMin, changeClearingSec, useDefaultFix, updateClearingUI, updatePreview, updateCustomTime, startGuide, onComplete };
 })();
 
 // ========== ガイド共通エンジン ==========
